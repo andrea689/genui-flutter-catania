@@ -93,10 +93,14 @@ sta nel repo. I file nativi non servono alla CI e restano fuori: meno
 superficie esposta, zero costo.
 </details>
 
-### 3. App Check — obbligatorio
+### 3. App Check — obbligatorio, e già attivo
 
-> **Dal 2 novembre 2026 App Check è richiesto per usare Firebase AI Logic.**
-> Senza, le richieste vengono rifiutate.
+> 🚨 **Su questo progetto l'enforcement è già attivo.** Finché non registri un
+> debug token, **nessuna chiamata a Gemini passa** — nemmeno in locale.
+> Verificato con chiamate reali: `403 PERMISSION_DENIED — App attestation failed`.
+
+Dal **2 novembre 2026** App Check diventa comunque obbligatorio per chiunque
+usi Firebase AI Logic, quindi non è una particolarità di questo repo.
 
 Non basta restringere la chiave per dominio: l'header `Referer` lo decide il
 client, e `curl` può dichiarare quello che vuole. La restrizione ferma un
@@ -104,22 +108,30 @@ client, e `curl` può dichiarare quello che vuole. La restrizione ferma un
 migliaia di euro generate in una notte da chiavi Firebase esposte e usate
 contro Gemini.
 
-Passi da fare in console (una volta sola):
+#### Sbloccare lo sviluppo in locale
+
+```bash
+flutter run -d macos -t tool/verify_gemini.dart
+```
+
+Stampa nei log `App Check debug token: '...'`. Copialo e registralo in
+**Firebase Console → App Check → [la tua app] → Gestisci token di debug**.
+
+Rilancia: deve stampare `RISULTATO: OK` con almeno un `TOOL searchEarthquakes`
+e una `SURFACE`. Questo script è anche lo smoke test del giro completo.
+
+> Il token **è diverso per ogni macchina e per ogni piattaforma**, e cambia a
+> ogni reinstallazione. Il web ne ha uno suo, stampato nella console del browser.
+>
+> **Se devi fare una demo dal vivo, verificalo la sera prima** — non la mattina.
+
+#### Per il deploy web (una volta sola)
 
 1. **Google Cloud Console** → crea una site key **reCAPTCHA Enterprise** per
    il dominio `andrea689.github.io`
    *(per il web è l'unico provider supportato — reCAPTCHA v3 non va bene)*
 2. **Firebase Console** → App Check → registra l'app web con quella site key
-3. **Firebase Console** → App Check → attiva l'**enforcement su Firebase AI Logic**
-4. **Registra il debug token** della macchina che usi per sviluppare
-
-#### ⚠️ Il passo 4 non è opzionale
-
-Con l'enforcement attivo **anche l'app in locale viene bloccata** se non hai
-registrato il debug token. Avvia l'app, copia il token dai log, e
-registralo in Firebase Console → App Check → app → *Manage debug tokens*.
-
-**Se devi fare una demo dal vivo, verificalo la sera prima.**
+3. Metti la site key nella repo variable `RECAPTCHA_SITE_KEY` (vedi [Deploy](#deploy))
 
 ---
 
@@ -130,6 +142,11 @@ flutter run                              # mobile / desktop
 flutter run -d chrome \
   --dart-define=RECAPTCHA_SITE_KEY=...   # web (serve la site key)
 ```
+
+In caso di guasto sul palco, `--dart-define=SKIP_APP_CHECK=true` salta
+l'inizializzazione di App Check per isolare il problema. **Non è una via
+d'uscita**: il server di Firebase AI Logic rifiuta comunque la richiesta.
+Serve solo a capire *dove* si rompe, mai in produzione.
 
 ## Widget Previewer
 
