@@ -497,3 +497,34 @@ configurazione deve essere rumoroso.
 
 **Nota per il talk**: e' un esempio migliore di mille slide sulla sicurezza.
 Il codice era "difensivo" e proprio per questo ha nascosto il problema.
+
+### Ottava: GitHub segnala le chiavi Firebase come secret esposti
+
+Mail automatica "Secrets detected": tre **Google API Key** in
+`lib/firebase_options.dart`. Sono le `apiKey` client di Firebase, che iniziano
+per `AIza` — il pattern generico delle chiavi Google. **Lo scanner non
+distingue una chiave client da una chiave server**, quindi allerta su entrambe.
+
+Per una chiave Firebase client e' atteso: quella chiave *identifica* il
+progetto, non *autorizza*. La protezione e' App Check, gia' in enforcement.
+
+**Ma non e' un falso positivo puro.** App Check copre Firebase AI Logic; non
+tutte le API Google guardano App Check. Serve restringere la chiave in Google
+Cloud Console (Credenziali -> Restrizioni API) alle sole API necessarie,
+altrimenti resta usabile contro le altre API abilitate sul progetto.
+
+Alternativa per non avere alert: togliere `firebase_options.dart` dal repo e
+generarlo in CI da secret. Scartata: aggiunge pezzi mobili per risolvere
+qualcosa che Google considera un non-problema, e la CI ha bisogno del file per
+buildare il web.
+
+### Nota per il talk: due allarmi opposti
+
+Due segnali di sicurezza arrivati a poche ore di distanza, di natura opposta:
+
+- **GitHub urla** per una chiave che non e' un segreto → rumore, quasi innocuo
+- **Il nostro codice taceva** ricadendo sul provider di debug in produzione
+  (settima trappola) → silenzio, pericoloso davvero
+
+Il pericolo vero non era quello segnalato dallo strumento. E' una morale
+migliore di qualunque slide teorica sulla sicurezza.

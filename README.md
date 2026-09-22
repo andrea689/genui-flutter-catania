@@ -93,6 +93,40 @@ sta nel repo. I file nativi non servono alla CI e restano fuori: meno
 superficie esposta, zero costo.
 </details>
 
+<details>
+<summary>📧 GitHub ti manderà una mail "Secrets detected". È previsto</summary>
+
+Il secret scanning di GitHub segnala le `apiKey` in `firebase_options.dart`
+come **Google API Key**. Lo fa perché quelle stringhe iniziano per `AIza`, il
+pattern generico delle chiavi Google: **lo scanner non sa distinguere una
+chiave client Firebase da una chiave server**, quindi allerta su entrambe.
+
+Per una chiave Firebase client è atteso, e Google lo mette in conto: quella
+chiave *identifica* il progetto, non *autorizza* nulla.
+
+**Quello che ti protegge davvero è App Check**, che su questo progetto è in
+enforcement: senza un token valido ogni chiamata a Gemini viene rifiutata, e
+la chiave da sola non serve a niente.
+
+**Una cosa da verificare però c'è.** App Check copre Firebase AI Logic, ma non
+tutte le API Google guardano App Check. Controlla che la chiave sia ristretta:
+
+**Google Cloud Console → API e servizi → Credenziali → la chiave →
+Restrizioni API →** *Limita chiave*, lasciando solo le API che servono
+(Firebase Installations, Firebase App Check, Firebase AI Logic).
+
+Senza quella restrizione la chiave resta utilizzabile contro altre API
+abilitate sul progetto, e lì App Check non ti copre.
+
+**L'alert si chiude** da *Security → Secret scanning* marcandolo come
+*Used in tests* o *False positive*. Non serve ruotare la chiave, a meno che tu
+non l'abbia lasciata senza restrizioni per molto tempo.
+
+Se preferisci zero alert, l'alternativa è togliere `firebase_options.dart` dal
+repo e generarlo in CI da dei secret. Funziona, ma aggiunge pezzi mobili per
+risolvere un problema che Google considera un non-problema.
+</details>
+
 ### 3. App Check — obbligatorio, e già attivo
 
 > 🚨 **Su questo progetto l'enforcement è già attivo.** Finché non registri un
