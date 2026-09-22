@@ -59,12 +59,7 @@ Future<void> bootstrapFirebase() async {
   final debugToken = kAppCheckDebugToken.isEmpty ? null : kAppCheckDebugToken;
 
   await FirebaseAppCheck.instance.activate(
-    // Su web l'unico provider supportato in produzione e' reCAPTCHA
-    // **Enterprise**, non v3. Senza site key si usa il debug provider, che
-    // stampa il token in console: quello va registrato in Firebase.
-    providerWeb: kRecaptchaSiteKey.isEmpty
-        ? WebDebugProvider(debugToken: debugToken)
-        : ReCaptchaEnterpriseProvider(kRecaptchaSiteKey),
+    providerWeb: _webProvider(debugToken),
     providerAndroid: kDebugMode
         ? AndroidDebugProvider(debugToken: debugToken)
         : const AndroidPlayIntegrityProvider(),
@@ -72,4 +67,50 @@ Future<void> bootstrapFirebase() async {
         ? AppleDebugProvider(debugToken: debugToken)
         : const AppleAppAttestProvider(),
   );
+}
+
+/// Sceglie il provider web.
+///
+/// **Una build di release non deve mai ricadere sul provider di debug.**
+/// Ci ricadeva, ed e' andata in produzione: la CI buildava senza site key
+/// (la repo variable non era impostata), il codice sceglieva il provider di
+/// debug perche' la key era vuota, e il sito pubblicato stampava un debug
+/// token in console per poi prendere 403 su ogni chiamata.
+///
+/// Un guasto di configurazione deve essere rumoroso, non silenzioso.
+WebProvider _webProvider(String? debugToken) {
+  if (kRecaptchaSiteKey.isNotEmpty) {
+    // Su web l'unico provider supportato in produzione e' reCAPTCHA
+    // **Enterprise**, non v3.
+    return ReCaptchaEnterpriseProvider(kRecaptchaSiteKey);
+  }
+  if (kDebugMode) {
+    // In sviluppo va bene: stampa il token in console, da registrare una
+    // volta e poi fissare con --dart-define=APP_CHECK_DEBUG_TOKEN.
+    return WebDebugProvider(debugToken: debugToken);
+  }
+  throw const AppCheckMisconfigured(
+    'Build di release senza RECAPTCHA_SITE_KEY.\n\n'
+    'App Check non puo attivarsi e ogni chiamata a Gemini verrebbe '
+    'rifiutata con 403.\n\n'
+    'Per risolvere:\n'
+    '1. crea una site key reCAPTCHA Enterprise per il dominio del sito\n'
+    '2. registrala in Firebase Console -> App Check -> app web\n'
+    '3. mettila nella repo variable RECAPTCHA_SITE_KEY\n'
+    '   (Settings -> Secrets and variables -> Actions -> Variables)\n'
+    '4. rilancia la GitHub Action',
+  );
+}
+
+/// App Check non e' configurabile in questa build.
+///
+/// Esiste per dare un messaggio leggibile invece di un 403 in console: chi
+/// apre il sito dal link del talk non deve aprire i DevTools per capire.
+class AppCheckMisconfigured implements Exception {
+  const AppCheckMisconfigured(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'AppCheckMisconfigured: $message';
 }

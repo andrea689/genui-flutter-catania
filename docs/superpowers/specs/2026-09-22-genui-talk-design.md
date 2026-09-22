@@ -471,3 +471,29 @@ Passato da `--dart-define=APP_CHECK_DEBUG_TOKEN=...`, vale su qualunque porta e
 dopo qualunque reinstallazione: si registra una volta sola.
 
 Alternativa solo web: fissare la porta con `--web-port=5000`.
+
+### Settima trappola: la ricaduta silenziosa sul provider di debug
+
+Il sito pubblicato stampava in console un **debug token di App Check** e
+prendeva 403 su ogni chiamata. La causa non era Firebase ma il nostro codice:
+
+```dart
+providerWeb: kRecaptchaSiteKey.isEmpty
+    ? WebDebugProvider(...)      // <-- anche in release
+    : ReCaptchaEnterpriseProvider(kRecaptchaSiteKey),
+```
+
+La repo variable `RECAPTCHA_SITE_KEY` non era impostata, la CI buildava con
+site key vuota, e la condizione sceglieva il provider di **debug** dentro una
+build di **produzione**, pubblicata su un dominio pubblico linkato dal talk.
+
+Il punto non e' la variable mancante — quella e' una dimenticanza normale. Il
+punto e' che **il codice la trasformava in un guasto silenzioso**: il fallback
+sembrava innocuo mentre nascondeva un errore di configurazione.
+
+Corretto: in release senza site key si lancia `AppCheckMisconfigured`, e
+`main.dart` mostra una schermata che spiega cosa fare. Un guasto di
+configurazione deve essere rumoroso.
+
+**Nota per il talk**: e' un esempio migliore di mille slide sulla sicurezza.
+Il codice era "difensivo" e proprio per questo ha nascosto il problema.
