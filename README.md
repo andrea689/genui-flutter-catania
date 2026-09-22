@@ -120,10 +120,37 @@ Stampa nei log `App Check debug token: '...'`. Copialo e registralo in
 Rilancia: deve stampare `RISULTATO: OK` con almeno un `TOOL searchEarthquakes`
 e una `SURFACE`. Questo script è anche lo smoke test del giro completo.
 
-> Il token **è diverso per ogni macchina e per ogni piattaforma**, e cambia a
-> ogni reinstallazione. Il web ne ha uno suo, stampato nella console del browser.
+#### ⚠️ Fissa il token, o te ne ritrovi uno nuovo a ogni avvio
+
+Se non lo fissi, **il token cambia a ogni run** e devi registrarlo di nuovo
+ogni volta. Non è un bug: il provider di debug lo salva in una memoria locale
+legata all'installazione, e quella memoria sparisce di continuo.
+
+- **Web** — lo storage del browser è **per origine**, e `flutter run -d chrome`
+  sceglie una porta a caso ogni volta (`localhost:56953`, poi un'altra). Ogni
+  run è un'origine nuova → storage vuoto → token nuovo.
+- **macOS** — serve il Keychain, e senza l'entitlement giusto
+  ([vedi sotto](#-macos-serve-anche-il-keychain)) non è raggiungibile: niente
+  persistenza, token nuovo ogni volta.
+
+La soluzione è passarlo tu. Prendi **un** token dai log, registralo in console,
+e poi usa sempre quello:
+
+```bash
+flutter run --dart-define=APP_CHECK_DEBUG_TOKEN=<il-tuo-token>
+```
+
+Così vale su qualunque porta, dopo qualunque reinstallazione, su tutte le
+piattaforme. Registri una volta e non ci pensi più.
+
+> Non è un segreto — vale solo per le build di debug e solo per i token che hai
+> registrato tu — ma non committarlo: tienilo nel `--dart-define`.
 >
-> **Se devi fare una demo dal vivo, verificalo la sera prima** — non la mattina.
+> Se preferisci non passarlo, l'alternativa **solo per il web** è fissare la
+> porta: `flutter run -d chrome --web-port=5000`. Stessa origine ogni volta,
+> quindi lo storage sopravvive.
+
+**Se devi fare una demo dal vivo, verificalo la sera prima** — non la mattina.
 
 #### 🍎 macOS: il token va sotto l'app **iOS**, non sotto quella web
 

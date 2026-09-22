@@ -450,3 +450,24 @@ Su iOS non si presenta: e' un problema del solo sandbox macOS.
 **Decisione pratica per il talk: la demo si fa sul web**, che non ha ne' il
 problema del Keychain ne' quello della firma, ed e' piu' comodo da proiettare.
 macOS resta supportato ma non e' la piattaforma del palco.
+
+### Sesta trappola: il debug token di App Check cambia a ogni avvio
+
+Non e' un bug: il provider di debug persiste il token in una memoria locale
+legata all'installazione, e quella memoria sparisce di continuo.
+
+- **Web**: lo storage del browser e' **per origine**, e `flutter run -d chrome`
+  sceglie una porta a caso a ogni avvio. Ogni run e' un'origine nuova, trova lo
+  storage vuoto, genera un token nuovo.
+- **macOS**: serve il Keychain, che senza entitlement non e' raggiungibile
+  (vedi trappola precedente). Niente persistenza, token nuovo ogni volta.
+
+Le due trappole si alimentano a vicenda: il Keychain rotto impedisce la
+persistenza, e chi non lo sa pensa di aver sbagliato a registrare il token.
+
+**Soluzione**: tutti e tre i provider di debug (`WebDebugProvider`,
+`AndroidDebugProvider`, `AppleDebugProvider`) accettano un `debugToken` fisso.
+Passato da `--dart-define=APP_CHECK_DEBUG_TOKEN=...`, vale su qualunque porta e
+dopo qualunque reinstallazione: si registra una volta sola.
+
+Alternativa solo web: fissare la porta con `--web-port=5000`.
