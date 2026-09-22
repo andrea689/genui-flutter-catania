@@ -373,3 +373,49 @@ non si va in rete:
 Piu' il modello che si spegne il giorno prima del talk. E' materiale onesto per
 l'Atto 4: l'ecosistema si muove piu' in fretta di quanto la doc riesca a stare
 dietro, e questo e' il costo reale di lavorare su roba in alpha.
+
+### Quarta trappola: la `thought_signature` si perde ricostruendo la Part
+
+I modelli "thinking" di Gemini 3 allegano a ogni function call una
+`thought_signature` che va rimandata indietro nel round successivo:
+
+> Function call is missing a thought_signature in functionCall parts. This is
+> required for tools to work correctly, and missing thought_signature may lead
+> to degraded model performance.
+
+Il problema in `firebase_ai` 4.0.0:
+
+- `Part._thoughtSignature` e' **privato e senza getter**: non si puo' leggere
+- `FunctionCall(...)`, il costruttore **pubblico**, la forza a `null`
+  (`content.dart:357`)
+- solo `FunctionCall._` e `FunctionCall.forTest` la accettano, e non sono
+  utilizzabili
+
+Quindi **qualunque ricostruzione la perde**, e non esiste modo di rimetterla.
+L'unica via e' non ricostruire: `response.functionCalls` restituisce le Part
+originali parsate dalla risposta (`api.dart:126-130`), che la signature ce
+l'hanno, e `toJson()` la riemette.
+
+Soluzione: `LlmToolCall.raw` porta l'oggetto originale del provider come
+`Object?` opaco — `ToolLoop` non sa cosa contenga, quindi i test col fake
+continuano a girare senza `firebase_ai`. `toContent` rimanda la Part verbatim
+e ricostruisce solo se il raw manca.
+
+Bloccato da test che verificano l'**identita'** dell'oggetto, non l'uguaglianza:
+e' l'unico modo di provare che la signature sopravvive, visto che non e'
+leggibile.
+
+### Il conto delle trappole, aggiornato
+
+Quattro, in tre package diversi, tutte invisibili senza rete:
+
+1. `flush()` one-shot nel transport di `genui`
+2. il parser di `genui` che trattiene il buffer su JSON non chiuso
+3. il ruolo `'function'` di `firebase_ai` contro Gemini 3.x
+4. la `thought_signature` azzerata dal costruttore pubblico di `firebase_ai`
+
+Piu' `gemini-2.5-flash` che si spegne il giorno prima del talk.
+
+Le ultime due hanno la stessa forma: **l'helper del package e' rimasto indietro
+rispetto al modello**. E' il costo reale dell'alpha, ed e' piu' onesto e piu'
+utile della slide generica su latenza e costi.

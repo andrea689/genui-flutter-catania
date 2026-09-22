@@ -96,4 +96,68 @@ void main() {
       }
     });
   });
+
+  /// I modelli "thinking" di Gemini 3 allegano alle function call una
+  /// `thought_signature` che va rimandata indietro nel round successivo:
+  ///
+  ///   Function call is missing a thought_signature in functionCall parts.
+  ///   This is required for tools to work correctly.
+  ///
+  /// In firebase_ai 4.0.0 quella signature e' un campo privato senza getter, e
+  /// `FunctionCall(...)` la forza a null. Quindi l'unico modo di conservarla e'
+  /// **non ricostruire l'oggetto**: questi test lo verificano per identita'.
+  group('thought signature', () {
+    test('la function call originale torna indietro tale e quale', () {
+      final originale = FunctionCall(
+        'searchEarthquakes',
+        const {'daysBack': 7},
+        id: 'call-1',
+      );
+
+      final content = FirebaseLlmGateway.toContent(
+        LlmModelCalls([
+          LlmToolCall(
+            name: originale.name,
+            args: originale.args,
+            id: originale.id,
+            raw: originale,
+          ),
+        ]),
+      );
+
+      expect(
+        identical(content.parts.single, originale),
+        isTrue,
+        reason: 'la Part va rimandata verbatim: ricostruirla perde la '
+            'thought_signature, che e privata e non e leggibile.',
+      );
+    });
+
+    test('senza raw ricostruisce, cosi i test col fake continuano a girare', () {
+      final content = FirebaseLlmGateway.toContent(
+        const LlmModelCalls([
+          LlmToolCall(name: 'searchEarthquakes', args: {'daysBack': 7}),
+        ]),
+      );
+
+      final part = content.parts.single as FunctionCall;
+      expect(part.name, 'searchEarthquakes');
+      expect(part.args, const {'daysBack': 7});
+    });
+
+    test('ogni call porta con se il proprio raw, senza mescolarli', () {
+      final prima = FunctionCall('a', const {}, id: '1');
+      final seconda = FunctionCall('b', const {}, id: '2');
+
+      final content = FirebaseLlmGateway.toContent(
+        LlmModelCalls([
+          LlmToolCall(name: 'a', args: const {}, id: '1', raw: prima),
+          LlmToolCall(name: 'b', args: const {}, id: '2', raw: seconda),
+        ]),
+      );
+
+      expect(identical(content.parts[0], prima), isTrue);
+      expect(identical(content.parts[1], seconda), isTrue);
+    });
+  });
 }

@@ -29,7 +29,14 @@ class FirebaseLlmGateway implements LlmGateway {
       }
       for (final call in response.functionCalls) {
         yield LlmToolCallEvent(
-          LlmToolCall(name: call.name, args: call.args, id: call.id),
+          LlmToolCall(
+            name: call.name,
+            args: call.args,
+            id: call.id,
+            // La Part originale, non una copia: porta la thought_signature,
+            // che e' privata e che il costruttore pubblico azzererebbe.
+            raw: call,
+          ),
         );
       }
     }
@@ -41,8 +48,18 @@ class FirebaseLlmGateway implements LlmGateway {
   /// modello, e sbagliarli si scopre solo contro l'API vera.
   static Content toContent(LlmMessage message) => switch (message) {
     LlmUserText(:final text) => Content.text(text),
+    // Le function call tornano indietro **come sono arrivate**. Ricostruirle
+    // con `FunctionCall(...)` perderebbe la thought_signature, che in
+    // firebase_ai 4.0.0 e' privata e che quel costruttore azzera:
+    //   Function call is missing a thought_signature in functionCall parts.
+    //   This is required for tools to work correctly.
+    // Il fallback ricostruisce solo se il raw manca (es. nei test col fake).
     LlmModelCalls(:final calls) => Content.model([
-      for (final call in calls) FunctionCall(call.name, call.args, id: call.id),
+      for (final call in calls)
+        if (call.raw case final FunctionCall original)
+          original
+        else
+          FunctionCall(call.name, call.args, id: call.id),
     ]),
     // ATTENZIONE: qui NON si usa Content.functionResponses(), che in
     // firebase_ai 4.0.0 hardcoda il ruolo 'function'. Gemini 3.x lo rifiuta:

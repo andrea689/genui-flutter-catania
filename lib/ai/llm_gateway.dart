@@ -34,11 +34,31 @@ final class LlmToolResults extends LlmMessage {
 
 /// Una richiesta di function call emessa dal modello.
 final class LlmToolCall {
-  const LlmToolCall({required this.name, required this.args, this.id});
+  const LlmToolCall({
+    required this.name,
+    required this.args,
+    this.id,
+    this.raw,
+  });
 
   final String name;
   final Map<String, Object?> args;
   final String? id;
+
+  /// L'oggetto originale del provider, da rimandare indietro **tale e quale**.
+  ///
+  /// Serve per i modelli "thinking" di Gemini 3: la function call porta con se'
+  /// una `thought_signature` che va conservata nel giro successivo, altrimenti
+  /// l'API protesta e il modello ragiona peggio.
+  ///
+  /// In `firebase_ai` 4.0.0 quella signature e' un campo **privato senza
+  /// getter**, e il costruttore pubblico di `FunctionCall` la forza a `null`:
+  /// ricostruire l'oggetto la perde comunque. L'unico modo di conservarla e'
+  /// non ricostruirlo.
+  ///
+  /// Resta `Object?` di proposito: [ToolLoop] non deve sapere cosa contiene,
+  /// cosi' i test continuano a girare senza `firebase_ai`.
+  final Object? raw;
 }
 
 /// L'esito di un tool, pronto per tornare al modello.
