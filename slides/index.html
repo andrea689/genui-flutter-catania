@@ -1,0 +1,1724 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GenUI in Flutter — Flutter Catania, 17 ottobre 2026</title>
+  <meta name="author" content="Andrea Valenzano">
+  <meta name="description" content="L'AI sa la risposta, ma te la sa solo scrivere. Generative UI in Flutter con il package genui e il protocollo A2UI.">
+
+  <!-- reveal.js 5.2.1 VENDORIZZATO: nessuna CDN, il deck parte offline da file:// e da HTTP -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230E0E13'/%3E%3Cpath d='M4 26 L16 7 L28 26 Z' fill='%23FF4A21'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="vendor/reveal.js/dist/reset.css">
+  <link rel="stylesheet" href="vendor/reveal.js/dist/reveal.css">
+  <link rel="stylesheet" href="vendor/reveal.js/plugin/highlight/monokai.css">
+  <!-- tema del talk: sostituisce integralmente dist/theme/* (non vendorizzato) -->
+  <link rel="stylesheet" href="css/theme-etna.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ====================================================================== -->
+<!-- ATTO 0 — AGGANCIO (3:00)                                               -->
+<!-- ====================================================================== -->
+
+<!-- ---------- 1 ---------- -->
+<section id="s01" data-slide="1">
+  <div class="wrap center cover">
+    <div class="eyebrow">Flutter Catania &middot; 17 ottobre 2026</div>
+    <h1>L&rsquo;AI sa la risposta.<br>Ma te la sa solo <span class="hl-lava">scrivere</span>.</h1>
+    <div class="sub">Generative UI in Flutter con <code>genui</code> e il protocollo A2UI</div>
+    <div class="rule"></div>
+    <!-- TODO ANDREA: completa la bio se vuoi (ruolo, azienda). Lasciato minimo di proposito. -->
+    <div class="who">
+      <b>Andrea Valenzano</b>
+      <span class="mono muted">github.com/andrea689</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[0:40]</b></p>
+    <p>Buonasera. Stasera parliamo di una cosa che tutti abbiamo in mano e quasi
+    nessuno usa bene: un modello che sa rispondere, ma sa rispondere solo a parole.</p>
+    <p>Mi presento in dieci secondi e vado dritto al problema — <b>non</b> dilungarti
+    sulla bio, il tempo serve tutto dopo.</p>
+    <p>Dì subito: &laquo;35 minuti, tre demo dal vivo, e una data che vi riguarda
+    tra due settimane&raquo;. Crea l&rsquo;aspettativa per la slide 28.</p>
+  </aside>
+</section>
+
+<!-- ---------- 2 — IL PROBLEMA (confronto visivo reale) ---------- -->
+<section id="s02" data-slide="2">
+  <div class="actbar">Atto 0 &middot; <b>Il problema</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Stessi dati</span>Chiedi all&rsquo;AI di una scossa sull&rsquo;Etna</h2>
+    <div class="fill">
+      <div class="grid g2" style="align-items:start">
+
+        <!-- SINISTRA: la risposta testuale -->
+        <div>
+          <div class="chat-head">Quello che ricevi oggi</div>
+          <div class="chat-bubble">
+            Il <b>14 ottobre 2026 alle 04:12 UTC</b> l&rsquo;INGV ha registrato un
+            evento di <b>magnitudo 3.4</b> nell&rsquo;area sommitale dell&rsquo;Etna,
+            a <b>2.1 km</b> di profondit&agrave;, con epicentro <b>1.8 km a
+            nord-est</b> del Cratere di Bocca Nuova, nel comune di Castiglione di
+            Sicilia. Nelle sei ore precedenti tre scosse minori, tra magnitudo
+            1.4 e 2.0. Nessun danno a persone o cose.
+          </div>
+          <div class="caption">Un muro di prosa. Per capire <em>dov&rsquo;&egrave;</em>
+          devi aprire un&rsquo;altra app.</div>
+        </div>
+
+        <!-- DESTRA: la stessa informazione come card -->
+        <div>
+          <div class="card-head">Quello che potresti ricevere</div>
+          <div class="quakecard">
+            <svg class="qmap" viewBox="0 0 560 132" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Mappa schematica dell'Etna con l'epicentro">
+              <defs>
+                <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#121B26"/><stop offset="100%" stop-color="#0B1119"/>
+                </linearGradient>
+                <radialGradient id="coneG" cx="42%" cy="48%" r="62%">
+                  <stop offset="0%" stop-color="#3E2C22"/><stop offset="100%" stop-color="#191921"/>
+                </radialGradient>
+              </defs>
+              <rect width="560" height="132" fill="url(#seaG)"/>
+              <!-- terra (schematica, non cartografica) -->
+              <path d="M0,0 L392,0 L444,34 L436,86 L486,132 L0,132 Z" fill="url(#coneG)"/>
+              <!-- costa ionica -->
+              <path d="M392,0 L444,34 L436,86 L486,132" fill="none" stroke="#2E5A78" stroke-width="3"/>
+              <!-- curve di livello attorno alla sommit&agrave; -->
+              <g fill="none" stroke="#54402F" stroke-width="2">
+                <ellipse cx="228" cy="60" rx="176" ry="54"/>
+                <ellipse cx="228" cy="60" rx="132" ry="40"/>
+                <ellipse cx="228" cy="60" rx="88"  ry="26"/>
+                <ellipse cx="228" cy="60" rx="44"  ry="13"/>
+              </g>
+              <!-- reticolo -->
+              <g stroke="#242A36" stroke-width="1">
+                <line x1="140" y1="0" x2="140" y2="132"/><line x1="300" y1="0" x2="300" y2="132"/>
+                <line x1="460" y1="0" x2="460" y2="132"/>
+                <line x1="0" y1="40" x2="560" y2="40"/><line x1="0" y1="92" x2="560" y2="92"/>
+              </g>
+              <!-- epicentro -->
+              <g>
+                <circle cx="252" cy="52" r="30" fill="#FF4A21" opacity=".16"/>
+                <circle cx="252" cy="52" r="18" fill="#FF4A21" opacity=".32"/>
+                <circle cx="252" cy="52" r="8.5" fill="#FF4A21" stroke="#fff" stroke-width="2.5"/>
+              </g>
+              <!-- etichette -->
+              <text x="252" y="102" fill="#E6DFD3" font-size="15" font-weight="700" font-family="sans-serif" text-anchor="middle">Etna &middot; area sommitale</text>
+              <text x="534" y="124" fill="#5E86A4" font-size="14" font-family="sans-serif" text-anchor="end">Mar Ionio</text>
+              <!-- scala -->
+              <g><line x1="26" y1="118" x2="96" y2="118" stroke="#E6DFD3" stroke-width="3"/>
+                 <text x="26" y="110" fill="#E6DFD3" font-size="13" font-family="sans-serif">5 km</text></g>
+            </svg>
+            <div class="qbody">
+              <div class="qrow">
+                <div class="mag">3.4</div>
+                <div>
+                  <div class="qwhere">Castiglione di Sicilia (CT)</div>
+                  <div class="qwhen">14 ott 2026 &middot; 04:12 UTC &middot; INGV</div>
+                </div>
+              </div>
+              <div class="qstats">
+                <div>Profondit&agrave;<span>2.1 km</span></div>
+                <div>Distanza<span>1.8 km NE</span></div>
+                <div>Precedenti 6h<span>3 eventi</span></div>
+              </div>
+              <div class="qcta">Vedi i 3 eventi precedenti &rarr;</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="footline lava">Stessi identici dati. Stesso modello. Stessa API.
+      <span class="hl-ocra">Cambia solo chi decide la forma della risposta.</span></div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:20]</b></p>
+    <p>Lascia la slide in silenzio due secondi. Il confronto parla da solo.</p>
+    <p>A sinistra: <b>leggi</b> per capire dov&rsquo;&egrave;. A destra: <b>guardi</b>.
+    E soprattutto: a destra puoi <b>toccare</b> — quel bottone in fondo &egrave; un
+    nuovo turno di conversazione, non un link.</p>
+    <p>Punto chiave da dire ad alta voce: &laquo;non ho cambiato il modello, non ho
+    cambiato i dati. Ho solo spostato una decisione: <b>chi sceglie la forma</b>&raquo;.</p>
+    <p>Nota onesta: i numeri sono d&rsquo;esempio; nella demo saranno dati INGV veri.</p>
+  </aside>
+</section>
+
+<!-- ---------- 3 — COSA VEDRAI ---------- -->
+<section id="s03" data-slide="3">
+  <div class="actbar">Atto 0 &middot; <b>Il problema</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Teaser &middot; 20 secondi</span>Una sola app. Tre domande. Tre UI diverse.</h2>
+    <div class="fill">
+      <div class="grid g3">
+        <div class="card">
+          <span class="tag t-neu">Domanda 1</span>
+          <p class="mono" style="font-size:.80em;color:var(--text-2)">&ldquo;cosa &egrave; successo sull&rsquo;Etna questa settimana?&rdquo;</p>
+          <p style="margin-top:14px"><span class="arr hl-lava">&darr;</span></p>
+          <p><b class="hl-ocra">MapCard</b> + <b class="hl-ocra">TimelineChart</b></p>
+          <div class="caption">panoramica: dove e quando</div>
+        </div>
+        <div class="card">
+          <span class="tag t-neu">Domanda 2</span>
+          <p class="mono" style="font-size:.80em;color:var(--text-2)">&ldquo;dimmi della scossa pi&ugrave; forte&rdquo;</p>
+          <p style="margin-top:14px"><span class="arr hl-lava">&darr;</span></p>
+          <p><b class="hl-ocra">EventCard</b> dettagliata</p>
+          <div class="caption">zoom su un singolo evento</div>
+        </div>
+        <div class="card">
+          <span class="tag t-neu">Domanda 3</span>
+          <p class="mono" style="font-size:.80em;color:var(--text-2)">&ldquo;confronta con agosto&rdquo;</p>
+          <p style="margin-top:14px"><span class="arr hl-lava">&darr;</span></p>
+          <p><b class="hl-ocra">ComparisonCard</b></p>
+          <div class="caption">due periodi affiancati</div>
+        </div>
+      </div>
+    </div>
+    <div class="footline">Tre presentazioni diverse dallo <b>stesso catalogo</b>.
+      <span class="hl-ocra">Zero schermate hardcoded.</span></div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:00]</b></p>
+    <p>Questo &egrave; il contratto con il pubblico: &laquo;fra venti minuti vedrete
+    esattamente questo, dal vivo&raquo;.</p>
+    <p>Sottolinea che non c&rsquo;&egrave; un <code>if</code> da nessuna parte che dice
+    &laquo;se la domanda contiene &lsquo;confronta&rsquo; mostra ComparisonCard&raquo;.
+    La scelta la fa il modello.</p>
+    <p>Non anticipare come funziona: solo <em>che cosa</em> succeder&agrave;.</p>
+  </aside>
+</section>
+
+<!-- ====================================================================== -->
+<!-- ATTO 1 — IL PERCH&Eacute; (5:30)                                       -->
+<!-- ====================================================================== -->
+
+<!-- ---------- 4 ---------- -->
+<section id="s04" data-slide="4">
+  <div class="actbar">Atto 1 &middot; <b>Il perch&eacute;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il panorama</span>Tre modi di mettere insieme UI e AI</h2>
+    <div class="fill">
+      <div class="grid g3">
+        <div class="card">
+          <span class="tag t-neu">1</span>
+          <h3>UI statica, contenuto generato</h3>
+          <p class="muted" style="font-size:.86em">Lo schermo l&rsquo;hai disegnato tu.
+          L&rsquo;AI riempie le stringhe.</p>
+          <p class="mono" style="font-size:.72em;color:var(--ash)">riassunti &middot; traduzioni
+          &middot; descrizioni prodotto</p>
+        </div>
+        <div class="card">
+          <span class="tag t-neu">2</span>
+          <h3>Chat pura</h3>
+          <p class="muted" style="font-size:.86em">Una sola UI possibile:
+          la bolla di testo. Tutto diventa prosa.</p>
+          <p class="mono" style="font-size:.72em;color:var(--ash)">markdown &middot; liste
+          &middot; tabelle ASCII</p>
+        </div>
+        <div class="card lava">
+          <span class="tag t-hot">3 &middot; oggi parliamo di questo</span>
+          <h3>UI generativa</h3>
+          <p style="font-size:.86em">L&rsquo;AI sceglie <b>anche la forma</b>.
+          Widget Flutter veri, non markdown.</p>
+          <p class="mono" style="font-size:.72em;color:var(--ocra)">card &middot; mappe
+          &middot; grafici &middot; bottoni cliccabili</p>
+        </div>
+      </div>
+    </div>
+    <div class="footline">I primi due sono ottimi. Il terzo serve quando
+      <b>la forma della risposta dipende dalla domanda</b>.</div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:00]</b></p>
+    <p>Sii esplicito: i primi due <b>non</b> sono sbagliati. Il 90% dei prodotti AI
+    seri sta l&igrave;, e va benissimo.</p>
+    <p>Il caso d&rsquo;uso della terza colonna &egrave; stretto: <b>quando non sai in
+    anticipo quale forma serve</b>. Se lo sai, disegna lo schermo e stai sereno.</p>
+    <p>Aggancio alla prossima: &laquo;definiamola bene, perch&eacute; il nome
+    &lsquo;UI generativa&rsquo; fa pensare a una cosa che non &egrave;&raquo;.</p>
+  </aside>
+</section>
+
+<!-- ---------- 5 ---------- -->
+<section id="s05" data-slide="5">
+  <div class="actbar">Atto 1 &middot; <b>Il perch&eacute;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Definizione</span>Che cos&rsquo;&egrave;, in una riga</h2>
+    <div class="fill">
+      <p class="lead xl">L&rsquo;agente sceglie <span class="hl-lava">anche la
+        presentazione</span>, non solo il contenuto.</p>
+      <div class="grid g2" style="margin-top:34px">
+        <div class="card">
+          <span class="tag t-neu">LLM &ldquo;normale&rdquo;</span>
+          <p style="font-size:.92em">Decide <b>che cosa</b> dire.</p>
+          <p class="mono" style="font-size:.78em;color:var(--ash)">risposta : String</p>
+        </div>
+        <div class="card ocra">
+          <span class="tag t-hot">Agente GenUI</span>
+          <p style="font-size:.92em">Decide anche <b>come mostrarlo</b>.</p>
+          <p class="mono" style="font-size:.78em;color:var(--ocra)">risposta : albero di widget</p>
+        </div>
+      </div>
+    </div>
+    <div class="footline lava">La risposta non &egrave; una stringa.
+      &Egrave; una <b>descrizione di interfaccia</b> che il tuo client sa rendere.</div>
+  </div>
+  <aside class="notes">
+    <p><b>[0:50]</b></p>
+    <p>Questa &egrave; la definizione che voglio ripetano al bar dopo. Dilla lenta.</p>
+    <p>La riga in basso &egrave; il ponte verso la slide dopo: se la risposta
+    &egrave; &laquo;una descrizione di interfaccia&raquo;, la domanda immediata del
+    pubblico &egrave; &laquo;quindi genera codice?&raquo;. Anticipala tu.</p>
+  </aside>
+</section>
+
+<!-- ---------- 6 — LA SLIDE PI&Ugrave; IMPORTANTE ---------- -->
+<section id="s06" data-slide="6" data-background-color="#0A0A10">
+  <div class="actbar">Atto 1 &middot; <b>Il perch&eacute;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">&#9888; Se vi ricordate una sola slide, questa</span>Mettiamo subito a posto un equivoco</h2>
+    <div class="fill">
+      <div class="nosi">
+        <div class="no">
+          <div class="mark">&#10007;</div>
+          <div class="claim">L&rsquo;AI genera codice Dart a&nbsp;runtime</div>
+          <!-- SYNC: nessuna sostituzione — pseudo-codice volutamente FINTO, illustra ci&ograve; che NON accade. Non sincronizzare con la demo. -->
+          <div class="snippet"><span class="c">// non succede. mai.</span>
+<span class="k">final</span> src = <span class="k">await</span> ai.generate();
+<span class="k">final</span> w   = <span class="t">eval</span>(src);
+runApp(w); <span class="c">// ?!</span></div>
+          <p class="caption" style="color:var(--text-2);font-size:.62em">Niente <code>eval</code>.
+          Niente compilatore a bordo. Non esiste in Dart, e non lo vuoi.</p>
+        </div>
+        <div class="si">
+          <div class="mark">&#10003;</div>
+          <div class="claim">L&rsquo;AI compone widget da un catalogo che scrivi tu</div>
+          <!-- SYNCED da test/bloc/conversation_bloc_test.dart (_eventCardScript, righe 62-74).
+               ATTENZIONE: e' l'A2UI dei test, NON una cattura reale dello stream di Gemini:
+               l'output vero e' ancora bloccato da App Check (403 PERMISSION_DENIED).
+               Da sostituire con una cattura vera appena il debug token e' registrato. -->
+          <div class="snippet"><span class="c">// A2UI vero, dai test della demo</span>
+{<span class="t">"version"</span>:<span class="s">"v0.9"</span>,<span class="t">"updateComponents"</span>:{
+ <span class="t">"surfaceId"</span>:<span class="s">"s1"</span>,<span class="t">"components"</span>:[{
+  <span class="t">"id"</span>:<span class="s">"root"</span>,<span class="t">"component"</span>:<span class="s">"EventCard"</span>,
+  <span class="t">"event"</span>:{&hellip;,<span class="t">"magnitude"</span>:<span class="s">4.3</span>,&hellip;}}]}}</div>
+          <p class="caption" style="color:var(--text-2);font-size:.62em">&Egrave; <b>dati</b>, non codice.
+          <code>EventCard</code> esiste perch&eacute; l&rsquo;hai scritta tu e
+          l&rsquo;hai messa nel catalogo.</p>
+        </div>
+      </div>
+      <div class="bigclaim">Il catalogo &egrave; il <span class="u">vocabolario</span>
+        che concedi al modello.<br>Ed &egrave; anche, nello stesso momento,
+        la sua <span class="u">sandbox</span>.</div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:40] &mdash; la slide pi&ugrave; importante del talk. Rallenta.</b></p>
+    <p>Fermati. Guarda la sala. &laquo;Prima che qualcuno se ne vada con
+    l&rsquo;idea sbagliata.&raquo;</p>
+    <p>Sinistra, tono netto: <b>no</b>. Non c&rsquo;&egrave; <code>eval</code> in Dart,
+    non c&rsquo;&egrave; un compilatore a runtime, e anche se ci fosse non lo useresti
+    mai in produzione.</p>
+    <p>Destra: quello che viaggia sul filo &egrave; <b>JSON</b>. Due soli messaggi:
+    <code>createSurface</code> apre la superficie, <code>updateComponents</code> ci
+    mette dentro una <b>lista piatta</b> di componenti, ognuno con il discriminante
+    <code>"component"</code>. Nessun oggetto annidato sotto il nome della card: la
+    forma vera &egrave; questa. Il modello pu&ograve; nominare solo ci&ograve; che
+    &egrave; nel catalogo.</p>
+    <p>Chiudi con la frase in fondo, scandita: <b>vocabolario</b> e <b>sandbox</b>
+    sono la stessa cosa. Questa frase ritorna alla slide 27.</p>
+    <p>Se qualcuno ha una sola domanda a fine talk, vuoi che sia su questo.</p>
+  </aside>
+</section>
+
+<!-- ---------- 7 ---------- -->
+<section id="s07" data-slide="7">
+  <div class="actbar">Atto 1 &middot; <b>Il perch&eacute;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il protocollo</span>A2UI &mdash; il formato che il modello parla</h2>
+    <div class="fill">
+      <div class="grid g2-wide-left">
+        <div>
+          <ul>
+            <li><b>Protocollo aperto</b>, non una libreria: descrive <em>come si
+              descrive</em> una UI, non come la disegni.</li>
+            <li>Versione <b>v0.9</b>, portato avanti da Google.</li>
+            <li><code>genui</code> &egrave; l&rsquo;<b>implementazione Flutter</b> di A2UI.
+              Non l&rsquo;unica possibile.</li>
+            <li>Il modello non parla &laquo;Flutter&raquo;: parla A2UI.
+              La traduzione in widget la fa il client.</li>
+          </ul>
+        </div>
+        <div class="card ocra">
+          <span class="tag t-hot">Conseguenza pratica</span>
+          <p style="font-size:.92em">Lo stesso stream A2UI pu&ograve; essere reso da
+          client diversi: Flutter oggi, web o nativo domani.</p>
+          <p style="font-size:.92em;margin-top:12px">Il tuo <b>catalogo</b>
+          resta l&rsquo;unica cosa specifica della piattaforma.</p>
+        </div>
+      </div>
+      <div class="flow" style="margin-top:26px;justify-content:center">
+        <div class="step">Modello</div><div class="arr">&rarr;</div>
+        <div class="step"><b class="hl-ocra">A2UI</b> (JSON in streaming)</div><div class="arr">&rarr;</div>
+        <div class="step"><code>genui</code></div><div class="arr">&rarr;</div>
+        <div class="step">Widget Flutter</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:00]</b></p>
+    <p>Distinzione che di solito non passa: <b>A2UI &egrave; il protocollo,
+    <code>genui</code> &egrave; il pacchetto</b>. Sono due cose che si aggiornano
+    con ritmi diversi.</p>
+    <p>&laquo;v0.9&raquo; &egrave; un numero che va detto: siamo prima dell&rsquo;1.0,
+    quindi il formato pu&ograve; ancora muoversi.</p>
+    <p>Se qualcuno chiede il confronto con MCP: MCP dice al modello quali
+    <em>strumenti</em> ha, A2UI dice come <em>mostrare</em> il risultato. Sono
+    ortogonali, si usano insieme.</p>
+  </aside>
+</section>
+
+<!-- ---------- 8 ---------- -->
+<section id="s08" data-slide="8">
+  <div class="actbar">Atto 1 &middot; <b>Il perch&eacute;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Onest&agrave; intellettuale</span>Stato dell&rsquo;arte, senza entusiasmo</h2>
+    <div class="fill">
+      <div class="grid g2-wide-left">
+        <table>
+          <tbody>
+            <tr><th>Package</th><td><code>genui</code> &mdash;
+              <span class="muted">non pi&ugrave;</span>
+              <span class="mono muted" style="text-decoration:line-through">flutter_genui</span></td></tr>
+            <tr><th>Versione</th><td><code>0.10.3</code> &nbsp;<span class="pill hot">alpha</span></td></tr>
+            <tr><th>Riscrittura</th><td>maggio 2026, sopra A2UI v0.9</td></tr>
+            <tr><th>Piattaforme</th><td>Android &middot; iOS &middot; macOS &middot; <b>web</b></td></tr>
+          </tbody>
+        </table>
+        <div class="card lava">
+          <span class="tag t-no">Attenzione</span>
+          <p style="font-size:.88em"><code>ContentGenerator</code> <b>non esiste
+          pi&ugrave;</b>: met&agrave; dei tutorial che trovate online &egrave; gi&agrave;
+          obsoleta.</p>
+          <p style="font-size:.88em;margin-top:12px"><b>Pinnate la versione.</b>
+          In alpha un minor pu&ograve; cambiarvi l&rsquo;API sotto i piedi.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footline">Dati verificati il <b>22 settembre 2026</b>.
+      <span class="hl-ocra">Ricontrollateli: a questo ritmo invecchiano in settimane.</span></div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:00]</b></p>
+    <p>Questa slide vale credibilit&agrave;. Il pubblico di un meetup riconosce
+    subito chi vende fumo.</p>
+    <p>Il cambio di nome <code>flutter_genui</code> &rarr; <code>genui</code> &egrave;
+    il motivo #1 per cui la gente sbaglia il <code>pubspec</code> e poi dice
+    &laquo;non funziona&raquo;.</p>
+    <p>Dì chiaramente: <b>alpha</b>. Non &egrave; roba da mettere in produzione
+    luned&igrave;. &Egrave; roba da capire adesso, per essere pronti dopo.</p>
+    <p>Se la data della verifica &egrave; vecchia quando presenti, <b>aggiorna la
+    slide</b> o dillo a voce.</p>
+  </aside>
+</section>
+
+<!-- ====================================================================== -->
+<!-- ATTO 2 — ARCHITETTURA (7:30)                                           -->
+<!-- ====================================================================== -->
+
+<!-- ---------- 9 — I TRE LAYER (SVG inline) ---------- -->
+<section id="s09" data-slide="9">
+  <div class="actbar">Atto 2 &middot; <b>Architettura</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Come &egrave; fatto dentro</span>Tre layer, uno sopra l&rsquo;altro</h2>
+    <div class="fill">
+      <svg class="diagram" viewBox="0 0 1000 318" role="img"
+           aria-label="Diagramma dei tre layer di genui: Engine (SurfaceController), Transport (A2uiTransportAdapter), Facade (Conversation)">
+        <defs>
+          <marker id="m9L" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="4" markerHeight="4" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L10,5 L0,10 z" fill="#FF4A21"/>
+          </marker>
+          <marker id="m9O" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="4" markerHeight="4" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L10,5 L0,10 z" fill="#F2B33D"/>
+          </marker>
+        </defs>
+
+        <!-- kicker sopra i box -->
+        <text class="d-kick" x="155" y="22" text-anchor="middle">1 &middot; ENGINE</text>
+        <text class="d-kick" x="500" y="22" text-anchor="middle">2 &middot; TRANSPORT</text>
+        <text class="d-kick" x="845" y="22" text-anchor="middle">3 &middot; FACADE</text>
+
+        <!-- layer -->
+        <rect class="d-box-l" x="5"   y="36" width="300" height="150" rx="12"/>
+        <rect class="d-box"   x="350" y="36" width="300" height="150" rx="12"/>
+        <rect class="d-box-o" x="695" y="36" width="300" height="150" rx="12"/>
+
+        <text class="d-api"  x="155" y="78"  text-anchor="middle">SurfaceController</text>
+        <text class="d-note" x="155" y="114" text-anchor="middle">tiene lo stato delle</text>
+        <text class="d-note" x="155" y="140" text-anchor="middle">surface e compone i</text>
+        <text class="d-note" x="155" y="166" text-anchor="middle">widget dal Catalog</text>
+
+        <text class="d-api"  x="500" y="78"  text-anchor="middle">A2uiTransportAdapter</text>
+        <text class="d-note" x="500" y="114" text-anchor="middle">parla col modello:</text>
+        <text class="d-note" x="500" y="140" text-anchor="middle">manda il prompt,</text>
+        <text class="d-note" x="500" y="166" text-anchor="middle">riceve i chunk A2UI</text>
+
+        <text class="d-api"  x="845" y="78"  text-anchor="middle">Conversation</text>
+        <text class="d-note" x="845" y="114" text-anchor="middle">l&rsquo;unica API che tocchi</text>
+        <text class="d-note" x="845" y="140" text-anchor="middle">dalla UI: sendRequest(),</text>
+        <text class="d-note" x="845" y="166" text-anchor="middle">events, state</text>
+
+        <!-- frecce fra i layer -->
+        <line class="d-arrow" x1="310" y1="111" x2="342" y2="111" marker-end="url(#m9L)"/>
+        <line class="d-arrow" x1="655" y1="111" x2="687" y2="111" marker-end="url(#m9L)"/>
+
+        <!-- connettori verso ci&ograve; che si aggancia -->
+        <line class="d-arrow-d" x1="155" y1="232" x2="155" y2="192" marker-end="url(#m9O)"/>
+        <line class="d-arrow-d" x1="500" y1="232" x2="500" y2="192" marker-end="url(#m9O)"/>
+        <line class="d-arrow-d" x1="845" y1="232" x2="845" y2="192" marker-end="url(#m9O)"/>
+
+        <rect class="d-box" x="5"   y="234" width="300" height="80" rx="12" opacity=".75"/>
+        <rect class="d-box" x="350" y="234" width="300" height="80" rx="12" opacity=".75"/>
+        <rect class="d-box" x="695" y="234" width="300" height="80" rx="12" opacity=".75"/>
+
+        <text class="d-lbl"  x="155" y="268" text-anchor="middle">Catalog + CatalogItem</text>
+        <text class="d-note" x="155" y="296" text-anchor="middle">lo scrivi tu</text>
+        <text class="d-lbl"  x="500" y="268" text-anchor="middle">Gemini</text>
+        <text class="d-note" x="500" y="296" text-anchor="middle">via Firebase AI Logic</text>
+        <text class="d-lbl"  x="845" y="268" text-anchor="middle">ConversationBloc</text>
+        <text class="d-note" x="845" y="296" text-anchor="middle">la tua app</text>
+      </svg>
+    </div>
+    <div class="footline">Ogni layer avvolge il precedente. Parti da
+      <code>Conversation</code>; <span class="hl-ocra">scendi solo quando ti serve
+      controllo fine</span>.</div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:30]</b></p>
+    <p>Leggi da sinistra: <b>Engine</b> &egrave; il motore vero, quello che tiene lo
+    stato e compone. <b>Transport</b> &egrave; il pezzo che parla col modello.
+    <b>Facade</b> &egrave; la comodit&agrave; che usi il primo giorno.</p>
+    <p>La riga in basso &egrave; il messaggio pratico: <b>non devi capire tutto per
+    iniziare</b>. <code>Conversation</code> ti basta per la prima demo.</p>
+    <p>Fai notare la fila in basso: le uniche tre cose che metti tu sono il
+    <b>catalogo</b>, la <b>chiave del modello</b> e il <b>tuo stato</b>.</p>
+    <p>Nella demo di stasera scenderemo al Transport, perch&eacute; ci serve il
+    function calling verso l&rsquo;INGV.</p>
+  </aside>
+</section>
+
+<!-- ---------- 10 ---------- -->
+<section id="s10" data-slide="10">
+  <div class="actbar">Atto 2 &middot; <b>Architettura</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il concetto centrale</span>Che cos&rsquo;&egrave; una <em>surface</em></h2>
+    <div class="fill">
+      <div class="grid g2-wide-right">
+        <div>
+          <ul>
+            <li>Una <b>superficie di rendering</b> con un id.</li>
+            <li>Il modello dice: &laquo;sulla surface <code>main</code> metti
+              <em>questo</em> albero&raquo;.</li>
+            <li>Una conversazione pu&ograve; averne <b>pi&ugrave; di una</b>: la
+              risposta principale, un pannello di dettaglio, una barra di azioni.</li>
+            <li>Gli eventi (il tap su una card) <b>risalgono</b> dalla surface
+              e diventano un nuovo turno.</li>
+          </ul>
+        </div>
+        <div>
+          <!-- SYNCED da lib/ui/chat_page.dart (righe 77-101) -->
+          <pre><span class="codecap">rendering</span><code class="language-dart" data-trim data-line-numbers="7-12|10-11">
+// lib/ui/chat_page.dart, dentro la ListView
+if (state.assistantText.isNotEmpty)
+  Text(state.assistantText, /* style: ... */),
+
+// Ogni surface e' una risposta composta
+// dal modello.
+for (final surfaceId in state.activeSurfaceIds)
+  Surface(
+    key: ValueKey(surfaceId),
+    surfaceContext: bloc.agent.controller
+        .contextFor(surfaceId),
+  ),
+
+if (state.isThinking) const _Thinking(),
+          </code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:00]</b></p>
+    <p>Analogia utile: la surface sta alla GenUI come il <code>&lt;div id&gt;</code>
+    sta a una SPA. &Egrave; un posto con un nome dove qualcun altro scrive.</p>
+    <p><code>Surface</code> prende solo <code>key</code> e
+    <code>surfaceContext</code>: <b>nessuna callback</b>. L&rsquo;interattivit&agrave;
+    nasce <b>dentro il catalogo</b> &mdash; &egrave; il <code>CatalogItem</code> che
+    chiama <code>itemContext.dispatchEvent(UserActionEvent(...))</code>, in
+    <code>event_card_item.dart</code>.</p>
+    <p>Da l&igrave; risale da solo: <code>SurfaceController</code> &rarr;
+    <code>Conversation.sendRequest</code>, e la risposta rientra su
+    <code>agent.conversation.events</code> fino al <code>ConversationBloc</code>.
+    Il tap non &egrave; un link: &egrave; un nuovo turno. Demo 3.</p>
+  </aside>
+</section>
+
+<!-- ---------- 11 ---------- -->
+<section id="s11" data-slide="11">
+  <div class="actbar">Atto 2 &middot; <b>Architettura</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il pezzo che scrivi tu</span><code>Catalog</code> e <code>CatalogItem</code></h2>
+    <div class="fill">
+      <p class="lead">Il <span class="hl-lava">vocabolario</span> che il modello ha il
+        permesso di usare.</p>
+      <!-- SYNCED da lib/catalog/etna_catalog.dart (righe 13-34) -->
+      <pre class="small" style="margin-top:18px"><span class="codecap">catalog</span><code class="language-dart" data-trim data-line-numbers="3-8|9-10">
+abstract final class EtnaCatalog {
+  static const String catalogId = 'flutter-catania.dev:etna';
+  static final List&lt;CatalogItem&gt; items = [
+    eventCardItem,
+    mapCardItem,
+    timelineChartItem,
+    comparisonCardItem,
+  ];
+  static Catalog asCatalog() =&gt; BasicCatalogItems.asNoAssetCatalog().copyWith(
+    newItems: items, catalogId: catalogId, systemPromptFragments: [_rules]);
+}
+      </code></pre>
+    </div>
+    <div class="footline">Quattro <code>CatalogItem</code> sopra i <em>basic</em>.
+      <span class="hl-ocra">Il modello non pu&ograve; nominare nient&rsquo;altro.</span></div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:20]</b></p>
+    <p>Qui si materializza la slide 6. &laquo;Il catalogo&raquo; non &egrave; una
+    metafora: &egrave; questa lista.</p>
+    <p>I <code>BasicCatalogItems</code> ti danno gi&agrave; testo, colonne, righe,
+    bottoni: bastano per non partire da zero. Fai notare
+    <code>asNoAssetCatalog()</code> al posto di <code>asCatalog()</code>: toglie
+    audio, immagini e video, che qui non servono. &Egrave; contesto in meno a ogni
+    turno, e aggancia la risposta qui sotto.</p>
+    <p>La domanda che arriva sempre: <b>quanti item?</b> Risposta onesta: pochi.
+    Pi&ugrave; item metti, pi&ugrave; schema viaggia a ogni turno e pi&ugrave; il
+    modello ha modo di sbagliare scelta. Quattro &egrave; un buon numero per un
+    dominio stretto.</p>
+  </aside>
+</section>
+
+<!-- ---------- 12 ---------- -->
+<section id="s12" data-slide="12">
+  <div class="actbar">Atto 2 &middot; <b>Architettura</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il contratto</span>Lo schema, con <code>json_schema_builder</code></h2>
+    <div class="fill">
+      <!-- SYNCED da lib/catalog/seismic_event_schema.dart (righe 12-42) -->
+      <pre><span class="codecap">schema</span><code class="language-dart" data-trim data-line-numbers="3-7|8|9-10">
+final Schema seismicEventSchema = S.object(
+  properties: {
+    'time': S.string(description: 'Istante dell evento in formato '
+        'ISO 8601 UTC, es. 2026-09-18T03:14:00Z.'),
+    'magnitude': S.number(description: 'Magnitudo, es. 3.4.'),
+    'place': S.string(description: 'Localita di riferimento, es. '
+        '"1 km N Ragalna (CT)".'),
+  },  // ... eventId, magnitudeType, latitude, longitude, depthKm
+  required: ['eventId', 'time', 'magnitude', 'magnitudeType', 'place',
+             'latitude', 'longitude', 'depthKm'],
+);
+      </code></pre>
+    </div>
+    <div class="footline lava">Lo schema non &egrave; documentazione: &egrave;
+      <b>l&rsquo;unica cosa che il modello vede</b> del tuo widget.
+      <span class="hl-ocra">Se non &egrave; qui dentro, non pu&ograve; inventarlo.</span></div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:00]</b></p>
+    <p>Il punto pi&ugrave; sottovalutato del talk: le <code>description</code> non
+    sono commenti, sono <b>prompt</b>. Il modello le legge e ci decide sopra.</p>
+    <p>Il modo pi&ugrave; economico di togliere gradi di libert&agrave; &egrave;
+    <b>non chiedere</b>: guarda cosa <em>non</em> c&rsquo;&egrave; qui dentro. La
+    severit&agrave; non gliela chiedo, la calcola Dart dalla magnitudo
+    (<code>SeismicEvent.severity</code>). Quello che puoi derivare tu non lo metti
+    nel contratto: meno campi, meno modi di sbagliare.</p>
+    <p>Se hai tempo: il mio errore ricorrente &egrave; schemi troppo permissivi.
+    Ogni campo opzionale in pi&ugrave; &egrave; un modo in pi&ugrave; di ricevere
+    una card storta.</p>
+  </aside>
+</section>
+
+<!-- ---------- 13 ---------- -->
+<section id="s13" data-slide="13">
+  <div class="actbar">Atto 2 &middot; <b>Architettura</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Dove entri tu</span>Transport e streaming</h2>
+    <div class="fill">
+      <!-- SYNCED da lib/ai/tool_loop.dart (righe 48-73) e lib/ai/etna_agent.dart (righe 103-106) -->
+      <pre class="small"><span class="codecap">transport</span><code class="language-dart" data-trim data-line-numbers="1-2|6-11|12-13">
+// lib/ai/etna_agent.dart — il corpo di onSend
+await loop.run(history: _history, onText: transport.addChunk);
+// lib/ai/tool_loop.dart — il giro, round per round
+for (var round = 0; round &lt; maxRounds; round++) {
+  final calls = &lt;LlmToolCall&gt;[];
+  await for (final event in gateway.streamTurn(history)) {
+    switch (event) {
+      case LlmTextDelta(:final text): onText(text);
+      case LlmToolCallEvent(:final call): calls.add(call);
+    }
+  }
+  if (calls.isEmpty) return;  // era la risposta finale, A2UI compreso
+  history..add(LlmModelCalls(calls))..add(LlmToolResults(await _executeAll(calls)));
+}
+      </code></pre>
+    </div>
+    <div class="footline"><code>onSend</code> manda, <code>addChunk</code> riporta
+      indietro i pezzi <b>mano a mano che arrivano</b>: la UI si compone mentre il
+      modello scrive.</div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:10]</b></p>
+    <p>Due metodi e hai capito il transport: <code>onSend</code> in uscita,
+    <code>addChunk</code> in entrata.</p>
+    <p>Il <code>for</code> sui round &egrave; la parte che fa male: function calling
+    e A2UI viaggiano nello <b>stesso</b> stream. L&rsquo;A2UI non &egrave; una
+    function call: arriva come <b>text delta</b>, e <code>onText</code> viene
+    inoltrato a <em>ogni</em> round, non solo all&rsquo;ultimo. Il giro finisce
+    quando un round non chiede pi&ugrave; tool.</p>
+    <p>Due dettagli che la slide non mostra: <code>maxRounds = 4</code>, e se il
+    modello continua a chiedere tool oltre il limite parte
+    <code>ToolLoopExhausted</code>. In alpha &egrave; il punto dove ti aspetti
+    sorprese &mdash; dillo, il pubblico apprezza.</p>
+    <p>Lo streaming non &egrave; estetica: sono i 2-3 secondi in cui l&rsquo;utente
+    vede comparire qualcosa invece di uno spinner.</p>
+  </aside>
+</section>
+
+<!-- ---------- 14 — IL GIRO COMPLETO (sequence diagram SVG) ---------- -->
+<section id="s14" data-slide="14">
+  <div class="actbar">Atto 2 &middot; <b>Architettura</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Tutto insieme</span>Il giro completo, dal tap al widget</h2>
+    <div class="fill">
+      <svg class="diagram" viewBox="0 0 1000 450" role="img"
+           aria-label="Sequence diagram: utente, ConversationBloc, A2uiTransportAdapter, Gemini, INGV FDSN">
+        <defs>
+          <marker id="m14L" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="4" markerHeight="4" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L10,5 L0,10 z" fill="#FF4A21"/>
+          </marker>
+          <marker id="m14O" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="4" markerHeight="4" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L10,5 L0,10 z" fill="#F2B33D"/>
+          </marker>
+        </defs>
+
+        <!-- intestazioni delle lifeline -->
+        <rect class="d-box-o" x="2"   y="2" width="188" height="76" rx="10"/>
+        <rect class="d-box"   x="204" y="2" width="188" height="76" rx="10"/>
+        <rect class="d-box-l" x="406" y="2" width="188" height="76" rx="10"/>
+        <rect class="d-box"   x="608" y="2" width="188" height="76" rx="10"/>
+        <rect class="d-box"   x="810" y="2" width="188" height="76" rx="10"/>
+
+        <text class="d-title" x="96"  y="34" text-anchor="middle">Utente</text>
+        <text class="d-note"  x="96"  y="60" text-anchor="middle">tocca e digita</text>
+
+        <text class="d-title" x="298" y="30" text-anchor="middle">App</text>
+        <text class="d-sub"   x="298" y="58" text-anchor="middle">ConversationBloc</text>
+
+        <text class="d-title" x="500" y="28" text-anchor="middle">Transport</text>
+        <text class="d-sub"   x="500" y="50" text-anchor="middle">A2uiTransport</text>
+        <text class="d-sub"   x="500" y="70" text-anchor="middle">Adapter</text>
+
+        <text class="d-title" x="702" y="30" text-anchor="middle">Gemini</text>
+        <text class="d-sub"   x="702" y="58" text-anchor="middle">Firebase AI</text>
+
+        <text class="d-title" x="904" y="30" text-anchor="middle">INGV FDSN</text>
+        <text class="d-sub"   x="904" y="58" text-anchor="middle">IngvRepository</text>
+
+        <!-- lifeline -->
+        <line class="d-life" x1="96"  y1="78" x2="96"  y2="390"/>
+        <line class="d-life" x1="298" y1="78" x2="298" y2="390"/>
+        <line class="d-life" x1="500" y1="78" x2="500" y2="390"/>
+        <line class="d-life" x1="702" y1="78" x2="702" y2="390"/>
+        <line class="d-life" x1="904" y1="78" x2="904" y2="390"/>
+
+        <!-- 1 -->
+        <text class="d-lbl" x="197" y="102" text-anchor="middle">&ldquo;cosa &egrave; successo?&rdquo;</text>
+        <line class="d-arrow" x1="96" y1="110" x2="294" y2="110" marker-end="url(#m14L)"/>
+        <!-- 2 -->
+        <text class="d-lbl" x="399" y="140" text-anchor="middle">onSend(message)</text>
+        <line class="d-arrow" x1="298" y1="148" x2="496" y2="148" marker-end="url(#m14L)"/>
+        <!-- 3 -->
+        <text class="d-lbl" x="601" y="178" text-anchor="middle">prompt + tool schema</text>
+        <line class="d-arrow" x1="500" y1="186" x2="698" y2="186" marker-end="url(#m14L)"/>
+        <!-- 4 -->
+        <text class="d-lbl" x="803" y="216" text-anchor="middle">searchEarthquakes()</text>
+        <line class="d-arrow" x1="702" y1="224" x2="900" y2="224" marker-end="url(#m14L)"/>
+        <!-- 5 -->
+        <text class="d-lbl" x="803" y="254" text-anchor="middle">GeoJSON: 47 eventi</text>
+        <line class="d-arrow-d" x1="904" y1="262" x2="706" y2="262" marker-end="url(#m14O)"/>
+        <!-- 6 -->
+        <text class="d-lbl" x="601" y="292" text-anchor="middle">chunk A2UI &rarr; addChunk()</text>
+        <line class="d-arrow-d" x1="702" y1="300" x2="504" y2="300" marker-end="url(#m14O)"/>
+        <!-- 7 -->
+        <text class="d-lbl" x="399" y="330" text-anchor="middle">surface aggiornata</text>
+        <line class="d-arrow-d" x1="500" y1="338" x2="302" y2="338" marker-end="url(#m14O)"/>
+        <!-- 8 -->
+        <text class="d-lbl" x="197" y="368" text-anchor="middle">MapCard + TimelineChart</text>
+        <line class="d-arrow" x1="298" y1="376" x2="100" y2="376" marker-end="url(#m14L)"/>
+
+        <!-- nota -->
+        <rect class="d-box-l" x="2" y="396" width="996" height="54" rx="10"/>
+        <text class="d-lbl" x="500" y="421" text-anchor="middle">Fra <tspan class="d-api">6</tspan> e <tspan class="d-api">8</tspan>: <tspan class="d-api">SurfaceController</tspan> compone dal <tspan class="d-api">Catalog</tspan>,</text>
+        <text class="d-lbl" x="500" y="443" text-anchor="middle">la surface renderizza. Nessun widget hardcoded.</text>
+      </svg>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:30]</b></p>
+    <p>Percorri le otto frecce col dito, senza fretta. &Egrave; la slide a cui
+    tornerai mentalmente durante le demo.</p>
+    <p>I due punti da dire ad alta voce:</p>
+    <p>1) <b>Freccia 4</b>: il modello non sa cos&rsquo;&egrave; l&rsquo;INGV. Sa che
+    esiste uno strumento che si chiama <code>searchEarthquakes</code>, e decide
+    lui quando chiamarlo.</p>
+    <p>2) <b>Frecce 6-7-8</b>: tratteggiate perch&eacute; sono uno <b>stream</b>.
+    Non arriva &laquo;la risposta&raquo;, arrivano pezzi, e la UI cresce.</p>
+    <p>La banda in fondo &egrave; il richiamo alla slide 6: in mezzo non c&rsquo;&egrave;
+    nessuna compilazione, c&rsquo;&egrave; una composizione.</p>
+  </aside>
+</section>
+
+<!-- ====================================================================== -->
+<!-- ATTO 3 — CODICE E DEMO (13:00)                                         -->
+<!-- ====================================================================== -->
+
+<!-- ---------- 15 ---------- -->
+<section id="s15" data-slide="15">
+  <div class="actbar">Atto 3 &middot; <b>Codice e demo</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Si parte</span>Setup, senza sorprese</h2>
+    <div class="fill">
+      <div class="grid g2-wide-left" style="align-items:start">
+        <div>
+          <!-- SYNCED da pubspec.yaml (versioni risolte in pubspec.lock, identiche) -->
+          <pre class="small"><span class="codecap">pubspec.yaml</span><code class="language-yaml" data-trim data-line-numbers="5|7-9">
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  genui: 0.10.3              # PINNATO: e' alpha
+  json_schema_builder: ^0.1.7
+  firebase_core: ^4.15.0
+  firebase_ai: ^4.0.0        # Gemini
+  firebase_app_check: ^0.4.8 # vedi slide 28
+  bloc: ^9.2.1
+  flutter_bloc: ^9.1.1
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.12.0
+  http: ^1.6.0
+  flutter_map: ^8.3.2
+  latlong2: ^0.10.1
+          </code></pre>
+        </div>
+        <div>
+          <div class="card">
+            <span class="tag t-neu">Una riga</span>
+            <p class="mono" style="font-size:.78em;color:var(--ocra)">flutterfire configure</p>
+            <p class="caption">genera <code>firebase_options.dart</code>.
+            Va committato: serve alla CI ed &egrave; sicuro <em>se</em> App Check
+            &egrave; in enforcement.</p>
+          </div>
+          <div class="card" style="margin-top:16px">
+            <span class="tag t-no">macOS</span>
+            <p class="mono" style="font-size:.70em;color:var(--ocra)">com.apple.security.network.client</p>
+            <p class="caption">senza questo entitlement, zero chiamate di rete
+            e una mezz&rsquo;ora persa a capire perch&eacute;.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[0:50]</b></p>
+    <p>Veloce, &egrave; la slide meno interessante ma la pi&ugrave; utile a chi
+    prover&agrave; stasera.</p>
+    <p>Tre cose sole: <b>pinna genui</b>, <b>committa firebase_options</b>,
+    <b>l&rsquo;entitlement su macOS</b>.</p>
+    <p>Sull&rsquo;entitlement: &egrave; il classico &laquo;funziona su Android, non
+    su Mac&raquo; che ti mangia il pomeriggio. Dillo con un mezzo sorriso, ci si
+    riconoscono tutti.</p>
+    <p>Se qualcuno anticipa la domanda su <code>firebase_app_check</code>: su questo
+    progetto l&rsquo;enforcement &egrave; <b>gi&agrave; attivo adesso</b>. Il 2
+    novembre (slide 28) &egrave; la data in cui diventa obbligatorio <em>per
+    tutti</em>, non quella in cui si accende il tuo.</p>
+  </aside>
+</section>
+
+<!-- ---------- 16 ---------- -->
+<section id="s16" data-slide="16">
+  <div class="actbar">Atto 3 &middot; <b>Codice e demo</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">I dati veri</span>INGV FDSN &mdash; aperta, senza chiave</h2>
+    <div class="fill">
+      <div class="grid g2" style="align-items:start">
+        <div>
+          <!-- SYNCED da lib/data/ingv_repository.dart (righe 11-14 e 52-62) -->
+          <pre class="small"><span class="codecap">repository</span><code class="language-dart" data-trim data-line-numbers="2-5|7|12-15">
+// lib/data/ingv_repository.dart
+static const double minLatitude = 37.4;
+static const double maxLatitude = 37.9;
+static const double minLongitude = 14.7;
+static const double maxLongitude = 15.3;
+
+final uri = Uri.https(_host, _path, {
+  'starttime': _formatTime(startTime),
+  if (endTime != null)
+    'endtime': _formatTime(endTime),
+  'minmagnitude': minMagnitude.toString(),
+  'minlat': EtnaBounds.minLatitude.toString(),
+  'maxlat': EtnaBounds.maxLatitude.toString(),
+  'minlon': EtnaBounds.minLongitude.toString(),
+  'maxlon': EtnaBounds.maxLongitude.toString(),
+  'format': 'geojson',
+  'limit': limit.toString(),
+});
+          </code></pre>
+        </div>
+        <div>
+          <ul>
+            <li>Nessuna API key. <b>Nessun proxy.</b></li>
+            <li><code>Access-Control-Allow-Origin: *</code> &rarr; funziona anche
+              dal browser, quindi la demo web &egrave; possibile.</li>
+            <li>Il bounding box &egrave; il riquadro dell&rsquo;Etna: il dominio
+              stretto &egrave; ci&ograve; che rende sensato un catalogo di quattro card.</li>
+            <li>Modelli con <code>freezed</code> + <code>json_serializable</code>:
+              il <code>SeismicEvent</code> &egrave; un normalissimo value object.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[0:50]</b></p>
+    <p>Sottolinea che <b>non c&rsquo;&egrave; niente di AI qui</b>: la classe si
+    chiama <code>IngvRepository</code>, &egrave; una normale chiamata HTTP e un
+    normale modello <code>freezed</code>.</p>
+    <p>Se leggi i numeri ad alta voce, leggi questi: lat <b>37.4&ndash;37.9</b>,
+    lon <b>14.7&ndash;15.3</b>, costanti di <code>EtnaBounds</code>. Non
+    improvvisarli.</p>
+    <p>Il CORS <code>*</code> &egrave; il motivo per cui la demo pu&ograve; girare
+    su GitHub Pages senza backend. Verificato il 22 settembre.</p>
+    <p>Se qualcuno chiede: sì, l&rsquo;INGV pubblica sotto licenza aperta; per un
+    talk e una demo va benissimo, per un prodotto leggetevi i termini.</p>
+  </aside>
+</section>
+
+<!-- ---------- 17 ---------- -->
+<section id="s17" data-slide="17">
+  <div class="actbar">Atto 3 &middot; <b>Codice e demo</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Function calling</span>Lo strumento che dai a Gemini</h2>
+    <div class="fill">
+      <!-- SYNCED da lib/ai/etna_tools.dart (righe 19-55) -->
+      <pre class="small"><span class="codecap">tool</span><code class="language-dart" data-trim data-line-numbers="1-5|6-9|13-14">
+static final FunctionDeclaration searchEarthquakes = FunctionDeclaration(
+  searchEarthquakesName,   // 'searchEarthquakes'
+  'Cerca i terremoti registrati dall INGV nell area dell Etna. '
+  'Usa questa funzione ogni volta che servono dati sismici reali: '
+  'non inventare mai magnitudo, date o localita.',
+  parameters: {
+    'daysBack': Schema.integer(description: 'Quanti giorni indietro cercare a partire da oggi. '
+        'Es. 7 per "questa settimana", 30 per "questo mese".'),
+    // ... minMagnitude, limit, offsetDays
+  },
+  optionalParameters: ['minMagnitude', 'limit', 'offsetDays'],
+);
+// gli handler, nello stesso file, indicizzati per nome:
+Map&lt;String, ToolHandler&gt; get handlers =&gt; {searchEarthquakesName: _handleSearchEarthquakes};
+      </code></pre>
+    </div>
+    <div class="footline">Il modello non sa cos&rsquo;&egrave; l&rsquo;INGV.
+      <span class="hl-ocra">Sa che esiste uno strumento con quel nome e quella
+      descrizione</span>, e decide lui quando serve.</div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:10]</b></p>
+    <p>Stessa lezione della slide 12: la <b>descrizione &egrave; il prompt</b>.
+    &laquo;Cerca i terremoti registrati dall INGV nell area dell Etna&raquo; &egrave;
+    letteralmente ci&ograve; su cui il modello decide.</p>
+    <p>I parametri sono in lingua da <em>domanda</em>, non da API:
+    <code>daysBack</code>, <code>minMagnitude</code>, <code>limit</code>,
+    <code>offsetDays</code> &mdash; niente <code>from</code>/<code>to</code> in ISO,
+    le date le calcola l&rsquo;handler. E non c&rsquo;&egrave; nessun
+    <code>run()</code> da implementare: gli handler sono una
+    <code>Map&lt;String, ToolHandler&gt;</code> che <code>ToolLoop</code> esegue
+    per nome.</p>
+    <p>Distinzione importante e spesso confusa: <b>il tool porta i dati</b>,
+    <b>il catalogo porta la forma</b>. Sono due meccanismi diversi che si
+    incontrano nello stesso turno.</p>
+    <p>Richiama la freccia 4 della slide 14.</p>
+  </aside>
+</section>
+
+<!-- ---------- 18 ---------- -->
+<section id="s18" data-slide="18">
+  <div class="actbar">Atto 3 &middot; <b>Codice e demo</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il widget</span>Anatomia di una card &mdash; e resta <em>pura</em></h2>
+    <div class="fill">
+      <!-- SYNCED da lib/catalog/event_card/event_card.dart (righe 12-21 e 225-230) -->
+      <pre class="small"><span class="codecap">event_card.dart</span><code class="language-dart" data-trim data-line-numbers="2-5|6-9|12-14">
+class EventCard extends StatelessWidget {
+  const EventCard({super.key, required this.event, this.onTap});
+  final SeismicEvent event;
+  /// Tap opzionale: in app lo collega l'adapter, nel previewer resta null.
+  final VoidCallback? onTap;
+  @override
+  Widget build(BuildContext context) {
+    /* ... */
+  }
+}
+
+@Preview(name: 'EventCard — scossa forte', group: 'Catalogo Etna',
+    size: Size(460, 220))
+Widget eventCardStrong() =&gt; EventCard(event: _strongQuake);
+      </code></pre>
+    </div>
+    <div class="footline lava">Il widget non sa nulla di AI, JSON o Firebase.
+      <span class="hl-ocra">&Egrave; un vincolo del previewer &mdash; ed &egrave;
+      comunque buon design.</span></div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:00]</b></p>
+    <p>Il vincolo: il <b>previewer gira su Flutter Web</b>, senza
+    <code>dart:io</code> e senza plugin nativi. Quindi se la card tocca Firebase,
+    la preview non parte.</p>
+    <p>Da cui la regola: <b>widget puro</b> da una parte, <b>adapter</b>
+    dall&rsquo;altra. La costrizione ti ha regalato l&rsquo;architettura giusta.</p>
+    <p>Sul <code>@Preview</code>: accetta solo funzioni top-level, metodi statici
+    o costruttori <b>senza argomenti obbligatori</b>. Da cui la funzione wrapper.
+    &Egrave; l&rsquo;errore #1 la prima volta.</p>
+    <p>Nel file le <code>@Preview</code> sono <b>quattro</b>, ognuna con il suo
+    <code>size:</code>: scossa forte, la stessa in <code>dark</code>,
+    microsismicit&agrave; e dato mancante. I casi limite si guardano, non si
+    immaginano.</p>
+    <p><code>group: 'Catalogo Etna'</code> &mdash; ricordati di dirlo, &egrave; il
+    setup della slide dopo.</p>
+  </aside>
+</section>
+
+<!-- ---------- 19 — LIVE: VS CODE ---------- -->
+<section id="s19" data-slide="19" class="live" data-background-color="#170A06">
+  <div class="wrap center">
+    <div class="livebadge"><span class="dot"></span> Live &middot; VS Code</div>
+    <h2>Widget Preview</h2>
+    <p class="stage">Un solo pannello con <b>tutto il catalogo</b>: le quattro card,
+      in light, dark e casi limite, senza lanciare l&rsquo;app e senza Firebase.</p>
+    <div class="todo">
+      <b>&#9654;</b> apro il pannello Widget Preview<br>
+      <b>&#9654;</b> group: <b>'Catalogo Etna'</b> &rarr; 14 anteprime, 4 card<br>
+      <b>&#9654;</b> cambio <b>brightness</b> &rarr; light / dark a caldo<br>
+      <b>&#9654;</b> tocco un colore &rarr; hot reload nel pannello
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:30] &mdash; SMETTI DI PARLARE E CAMBIA FINESTRA.</b></p>
+    <p><b>Prima del talk:</b> VS Code gi&agrave; aperto sul repo, Flutter 3.38+,
+    pannello Widget Preview gi&agrave; avviato e caldo (l&rsquo;auto-start c&rsquo;&egrave;
+    da 3.38, ma il primo build &egrave; lento: <b>non farlo sul palco</b>).</p>
+    <p><b>Cosa fare, nell&rsquo;ordine:</b></p>
+    <p>1. Porta in primo piano il pannello: si vedono le <b>14 anteprime</b> del
+    gruppo <code>Catalogo Etna</code> &mdash; le quattro card, ognuna in light, in
+    dark e nei suoi casi limite. Se dici &laquo;quattro&raquo;, intendi i tipi di
+    card, non i riquadri.</p>
+    <p>2. Apri <code>lib/catalog/event_card/event_card.dart</code>, scorri fino
+    alle <code>@Preview</code> in fondo al file. Fai vedere che sono <b>nello
+    stesso file</b> del widget.</p>
+    <p>3. Cambia <code>brightness</code> su una preview e salva: la card passa a
+    dark <b>senza rilanciare</b>.</p>
+    <p>4. Cambia un colore nel <code>Card(...)</code> e salva &rarr; hot reload.</p>
+    <p><b>Messaggio da dire:</b> &laquo;questo &egrave; il catalogo. Tutto quello che
+    l&rsquo;AI potr&agrave; mai mostrarvi &egrave; in questo pannello.&raquo;</p>
+    <p><b>Fallback:</b> se il pannello non parte, passa oltre in 10 secondi &mdash;
+    hai uno screenshot pronto. Non debuggare sul palco.</p>
+  </aside>
+</section>
+
+<!-- ---------- 20 ---------- -->
+<section id="s20" data-slide="20">
+  <div class="actbar">Atto 3 &middot; <b>Codice e demo</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">L&rsquo;adapter</span>Da widget a <code>CatalogItem</code></h2>
+    <div class="fill">
+      <!-- SYNCED da lib/catalog/event_card/event_card_item.dart (righe 11-39) -->
+      <pre class="small"><span class="codecap">event_card_item.dart</span><code class="language-dart" data-trim data-line-numbers="2|3-6|7-12">
+final CatalogItem eventCardItem = CatalogItem(
+  name: 'EventCard',
+  dataSchema: S.object(
+    description: 'Il dettaglio di UNA singola scossa. Usala quando l utente '
+        'chiede di un evento specifico, per esempio "la scossa piu forte".',
+    properties: {'event': seismicEventSchema}, required: ['event']),
+  widgetBuilder: (itemContext) {
+    final data = itemContext.data as Map&lt;String, Object?&gt;;
+    final event = parseSeismicEvent(data['event']! as Map&lt;String, Object?&gt;);
+    return EventCard(event: event, onTap: () =&gt; itemContext.dispatchEvent(
+        UserActionEvent(name: 'event_card_tapped',
+            surfaceId: itemContext.surfaceId, /* ... */)));
+  },
+);
+      </code></pre>
+      <div class="grid g3 tight" style="margin-top:22px">
+        <div class="card flat"><span class="pill">name</span>
+          <p class="caption">il nome che il modello pu&ograve; scrivere</p></div>
+        <div class="card flat"><span class="pill hot">dataSchema</span>
+          <p class="caption">il contratto: cosa pu&ograve; passare</p></div>
+        <div class="card flat"><span class="pill ok">widgetBuilder</span>
+          <p class="caption">la traduzione JSON &rarr; pixel</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:10]</b></p>
+    <p>Ventinove righe in tutto, commenti compresi. &Egrave; tutto qui il
+    &laquo;collante&raquo;.</p>
+    <p>Fai notare che l&rsquo;adapter <b>non sa nulla di pixel</b> e il widget
+    <b>non sa nulla di JSON</b>. Puoi cambiare la grafica della card senza toccare
+    lo schema, e viceversa.</p>
+    <p>Il <code>widgetBuilder</code> prende <b>un solo</b> parametro,
+    <code>itemContext</code>: i dati stanno in <code>itemContext.data</code> e a
+    convertirli &egrave; <code>parseSeismicEvent(...)</code>, un parser tollerante
+    scritto a mano &mdash; non un <code>fromJson</code> generato.</p>
+    <p>Qui c&rsquo;&egrave; il punto di test della slide 26: quel builder &egrave;
+    una funzione pura da <code>itemContext</code> a <code>Widget</code>.
+    Testabilissima.</p>
+  </aside>
+</section>
+
+<!-- ---------- 21 ---------- -->
+<section id="s21" data-slide="21">
+  <div class="actbar">Atto 3 &middot; <b>Codice e demo</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">L&rsquo;ultimo pezzo</span>Il system prompt</h2>
+    <div class="fill">
+      <!-- SYNCED da lib/ai/etna_agent.dart (righe 36-40) e lib/catalog/etna_catalog.dart (righe 36-57) -->
+      <pre class="small"><span class="codecap">prompt</span><code class="language-dart" data-trim data-line-numbers="1-2|4-5|7-10">
+final promptBuilder = PromptBuilder.chat(catalog: effectiveCatalog); // etna_agent.dart
+systemInstruction: Content.system(promptBuilder.systemPromptJoined()),
+// lib/catalog/etna_catalog.dart — le TUE regole, iniettate nel prompt
+static const String _rules = '''
+Sei l'assistente sismico dell'Etna. Rispondi in italiano.
+SCELTA DELLA CARD — e' la decisione piu' importante che prendi:
+- EventCard: una singola scossa in dettaglio ("la scossa piu' forte").
+- MapCard: DOVE sono avvenute le scosse, o il quadro di uno sciame.
+- TimelineChart: QUANDO sono avvenute, l'andamento nel tempo.
+- ComparisonCard: il paragone fra due periodi ("confronta con agosto").
+DATI:
+- Chiama sempre searchEarthquakes prima di parlare di scosse.
+- Non inventare MAI magnitudo, date, localita' o identificativi: ...
+''';
+      </code></pre>
+    </div>
+    <div class="footline">Il prompt <b>non descrive i widget</b>: quelli li legge
+      dallo schema. <span class="hl-ocra">Il prompt dice <em>quando</em> usarli.</span></div>
+  </div>
+  <aside class="notes">
+    <p><b>[0:50]</b></p>
+    <p><code>PromptBuilder.chat(catalog: ...)</code> inietta da solo gli schemi del
+    catalogo: non devi riscriverli nel prompt, sarebbe duplicazione che invecchia.</p>
+    <p>Il meccanismo, se lo chiedono: <code>chat</code> <b>non</b> prende un
+    <code>systemInstruction</code>. Le tue regole entrano dal <b>catalogo</b>, con
+    <code>copyWith(systemPromptFragments: [_rules])</code>; il builder le rilegge
+    con <code>systemPromptJoined()</code> e finiscono in
+    <code>Content.system(...)</code> sul modello. Il catalogo porta la forma
+    <em>e</em> le regole.</p>
+    <p>Le tre righe con le frecce sono la parte che tocchi davvero quando la demo
+    sceglie la card sbagliata. &Egrave; <b>tuning</b>, non programmazione: aspettati
+    di riscriverle qualche volta.</p>
+    <p>&laquo;non inventarli mai&raquo; &egrave; l&rsquo;unica difesa contro un modello
+    che risponde di pancia invece di chiamare il tool.</p>
+    <p>Chiudi: &laquo;fine del codice. Adesso lo vediamo girare.&raquo;</p>
+  </aside>
+</section>
+
+<!-- ---------- 22 — DEMO 1 ---------- -->
+<section id="s22" data-slide="22" class="live" data-background-color="#1C0A04">
+  <div class="wrap center">
+    <div class="livebadge"><span class="dot"></span> Demo 1</div>
+    <h2>Una domanda semplice</h2>
+    <p class="stage">Un evento, una card. Il caso base: il modello sceglie
+      <b>un solo item</b> del catalogo e lo riempie con dati INGV veri.</p>
+    <div class="todo">
+      &gt; <b>dimmi della scossa piu forte di questa settimana</b><br>
+      <span style="opacity:.75">attesa: tool call &rarr; INGV &rarr; una EventCard</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[2:00] &mdash; CAMBIA FINESTRA. App gi&agrave; aperta, chat vuota.</b></p>
+    <p><b>Digita esattamente:</b><br>
+    <code>dimmi della scossa piu forte di questa settimana</code></p>
+    <p><b>Cosa deve succedere:</b> spinner breve &rarr; Gemini chiama
+    <code>searchEarthquakes</code> &rarr; arrivano i chunk A2UI &rarr; compare
+    <b>una</b> <code>EventCard</code> con magnitudo, profondit&agrave;, luogo e ora.</p>
+    <p><b>Cosa far notare mentre carica:</b> la card <b>si compone a pezzi</b>.
+    Non appare tutta insieme: &egrave; lo streaming della slide 13.</p>
+    <p><b>Se sbaglia card</b> (es. tira su una MapCard): non nasconderlo. Dì
+    &laquo;ecco il non-determinismo della slide 25&raquo; e rilancia una volta sola.</p>
+    <p><b>Fallback:</b> se arriva un 403 &rarr; &egrave; App Check (slide 28, si
+    commenta da solo). Se la rete cade &rarr; video registrato.</p>
+    <p><b>Non</b> restare pi&ugrave; di 2 minuti: hai ancora due demo.</p>
+  </aside>
+</section>
+
+<!-- ---------- 23 — DEMO 2 ---------- -->
+<section id="s23" data-slide="23" class="live" data-background-color="#1C0A04">
+  <div class="wrap center">
+    <div class="livebadge"><span class="dot"></span> Demo 2</div>
+    <h2>Una domanda complessa</h2>
+    <p class="stage">Stessa app, stesso catalogo, <b>nessun codice nuovo</b>:
+      il modello compone pi&ugrave; item insieme.</p>
+    <div class="todo">
+      &gt; <b>cosa e successo sull Etna questa settimana?</b><br>
+      <span style="opacity:.75">attesa: MapCard + TimelineChart nella stessa surface</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[2:20] &mdash; il momento clou del talk.</b></p>
+    <p><b>Digita esattamente:</b><br>
+    <code>cosa e successo sull Etna questa settimana?</code></p>
+    <p><b>Cosa deve succedere:</b> stessa tool call, ma stavolta il modello
+    compone <b>due item</b>: una <code>MapCard</code> con gli epicentri e un
+    <code>TimelineChart</code> con la distribuzione temporale, impilati.</p>
+    <p><b>La frase da dire, subito dopo:</b> &laquo;fra la demo di prima e questa
+    <b>non ho toccato una riga di codice</b>. Ho cambiato la domanda.&raquo;</p>
+    <p>Poi, indicando lo schermo: &laquo;questa schermata non esiste nel mio
+    progetto. Non l&rsquo;ho mai disegnata.&raquo;</p>
+    <p><b>Se compone male</b> (una card sola, o tre): perfetto, &egrave; materiale
+    per la slide 25. Mostralo e vai avanti.</p>
+    <p><b>Fallback:</b> video registrato. Ma questa &egrave; la demo che vale il
+    talk: se ne deve funzionare una sola, che sia questa.</p>
+  </aside>
+</section>
+
+<!-- ---------- 24 — DEMO 3 ---------- -->
+<section id="s24" data-slide="24" class="live" data-background-color="#1C0A04">
+  <div class="wrap center">
+    <div class="livebadge"><span class="dot"></span> Demo 3</div>
+    <h2>La UI risponde</h2>
+    <p class="stage">Un tap su una card &egrave; un <b>nuovo turno</b> di
+      conversazione. Non &egrave; un link: &egrave; un messaggio.</p>
+    <div class="todo">
+      &gt; <b>[tap sulla EventCard della Demo 1]</b><br>
+      <span style="opacity:.75">attesa: nuovo turno &rarr; EventCard di quell evento</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:20]</b></p>
+    <p><b>Cosa fare:</b> <b>scorri su</b> fino alla <code>EventCard</code> della
+    Demo 1 &mdash; le surface restano tutte in lista, non vengono sostituite &mdash;
+    e <b>toccala</b>. Anche gli epicentri sulla <code>MapCard</code> rispondono
+    (<code>onEventTap</code>), ma dal vivo la card &egrave; un bersaglio pi&ugrave;
+    grande di un punto sulla mappa: vai di <code>EventCard</code>.</p>
+    <p><b>Cosa deve succedere:</b> il <code>CatalogItem</code> chiama
+    <code>itemContext.dispatchEvent</code> (slide 10), l&rsquo;evento risale fino a
+    <code>sendRequest</code>, parte un nuovo turno e compare una
+    <code>EventCard</code> dettagliata.</p>
+    <p><b>Il punto:</b> &laquo;la UI generata non &egrave; un poster. &Egrave;
+    <b>interattiva</b>, e l&rsquo;interazione rientra nella conversazione.&raquo;</p>
+    <p>Chiudi le demo qui e torna alle slide: &laquo;bene. Adesso la parte che di
+    solito non vi raccontano.&raquo;</p>
+    <p><b>Fallback:</b> se il tap non &egrave; cablato, dillo &mdash; &egrave; alpha,
+    e spiegalo a voce con la slide 10.</p>
+  </aside>
+</section>
+
+<!-- ====================================================================== -->
+<!-- ATTO 4 — LA REALTÀ (4:30)                                              -->
+<!-- ====================================================================== -->
+
+<!-- ---------- 25 ---------- -->
+<section id="s25" data-slide="25">
+  <div class="actbar">Atto 4 &middot; <b>La realt&agrave;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Senza sconti</span>Cosa funziona, e cosa fa male</h2>
+    <div class="fill">
+      <div class="grid g2">
+        <div class="card" style="border-color:var(--ok)">
+          <span class="tag t-yes">Funziona</span>
+          <ul>
+            <li><b>Densit&agrave;</b>: una card dice in un colpo quello che tre
+              paragrafi spiegano.</li>
+            <li><b>Interazione vera</b>: il tap rientra nella conversazione.</li>
+            <li><b>Zero schermate morte</b>: non disegni layout che nessuno aprir&agrave;.</li>
+          </ul>
+        </div>
+        <div class="card lava">
+          <span class="tag t-no">Fa male</span>
+          <ul>
+            <li><b>Latenza</b>: prima del primo chunk c&rsquo;&egrave; il
+              round-trip del tool. Lo streaming la maschera, non la toglie.</li>
+            <li><b>Non-determinismo</b>: stessa domanda, UI diversa. Gli utenti
+              lo notano.</li>
+            <li><b>Costo token</b>: gli schemi del catalogo viaggiano
+              <em>a ogni turno</em>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footline">Nessuna di queste &egrave; un bug da sistemare.
+      <span class="hl-ocra">Sono il prezzo del modello di interazione.</span></div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:00]</b></p>
+    <p>Se hai appena visto una demo sbagliare la card, <b>richiamala qui</b>:
+    &egrave; il non-determinismo, in diretta.</p>
+    <p>Sul costo: pi&ugrave; item nel catalogo = pi&ugrave; schema in ogni prompt.
+    &Egrave; una ragione tecnica, non estetica, per tenere il catalogo piccolo.</p>
+    <p>Sul non-determinismo: la mitigazione vera &egrave; un prompt che fissa le
+    regole di scelta (slide 21), non sperare che il modello sia costante.</p>
+  </aside>
+</section>
+
+<!-- ---------- 26 ---------- -->
+<section id="s26" data-slide="26">
+  <div class="actbar">Atto 4 &middot; <b>La realt&agrave;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">La domanda che fanno tutti</span>Come testi una UI che non conosci a priori?</h2>
+    <div class="fill">
+      <p class="lead" style="font-size:1.24em">Non testi la UI generata: testi i <span class="hl-lava">due
+        lati del contratto</span>.</p>
+      <!-- SYNCED da test/catalog/golden_test.dart (righe 179-185) e test/catalog/catalog_schema_test.dart (righe 176-184) -->
+      <pre class="small" style="margin-top:16px"><span class="codecap">test</span><code class="language-dart" data-trim data-line-numbers="1-6|7-11">
+// test/catalog/golden_test.dart — i widget sono puri: golden, zero AI
+testWidgets('EventCard, scossa forte', (tester) async {
+  await _pump(tester, EventCard(event: _strongQuake));
+  await expectLater(find.byType(EventCard),
+      matchesGoldenFile('goldens/event_card_strong.png'));
+});
+// test/catalog/catalog_schema_test.dart — l'adapter e' il contratto
+testWidgets('EventCard', (tester) async {
+  await _pumpItem(tester, eventCardItem, {'component': 'EventCard', 'event': _sampleEventJson});
+  expect(find.byType(EventCard), findsOneWidget);
+});
+      </code></pre>
+    </div>
+    <div class="footline" style="font-size:.82em">Resta fuori una cosa sola: <b>quale item sceglie il
+      modello</b>. <span class="hl-ocra">Quella la valuti, non la asserisci.</span></div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:00]</b></p>
+    <p>La risposta corta: <b>spezzi il problema in due</b>. I widget sono
+    deterministici e li testi come sempre. Gli adapter sono funzioni pure e li
+    testi con JSON buono e JSON rotto.</p>
+    <p>Il caso &laquo;JSON rotto&raquo; &egrave; quello che conta davvero: il modello
+    <em>prima o poi</em> manda un campo fuori schema. Il degrado sta tutto in
+    <code>parseSeismicEvent</code> (campo mancante &rarr; &laquo;Localita non
+    disponibile&raquo;, oppure <code>0</code>) e in <code>parseSeismicEvents</code>,
+    che scarta le voci malformate invece di esplodere. Deve uscirne una card
+    sbiadita, <b>mai un crash</b>.</p>
+    <p>L&rsquo;ultima riga &egrave; il messaggio onesto: la scelta dell&rsquo;item
+    &egrave; un problema di <b>eval</b>, come ogni cosa LLM. Un set di domande e un
+    controllo periodico, non un <code>expect</code>.</p>
+  </aside>
+</section>
+
+<!-- ---------- 27 ---------- -->
+<section id="s27" data-slide="27">
+  <div class="actbar">Atto 4 &middot; <b>La realt&agrave;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Sicurezza</span>Il catalogo <em>&egrave;</em> la sandbox</h2>
+    <div class="fill">
+      <p class="lead xl">L&rsquo;AI non pu&ograve; renderizzare
+        <span class="hl-lava">ci&ograve; che non le hai dato</span>.</p>
+      <div class="grid g2" style="margin-top:18px">
+        <div class="card" style="border-color:var(--ok)">
+          <span class="tag t-yes">Quello che &egrave; gi&agrave; chiuso</span>
+          <ul>
+            <li>Nessun item &rArr; nessun widget: un <code>RawHtml</code>
+              esiste solo se lo scrivi tu.</li>
+            <li>Ogni campo passa dallo schema: tipo dichiarato e <code>required</code>.</li>
+            <li>Il worst case non &egrave; una XSS: &egrave; una <b>card brutta</b>.</li>
+          </ul>
+        </div>
+        <div class="card lava">
+          <span class="tag t-no">Quello che resta aperto</span>
+          <ul>
+            <li>I <b>valori</b> nei widget arrivano dal modello: input
+              <b>non fidato</b>.</li>
+            <li>Mai un item che apre URL arbitrari o agisce senza conferma.</li>
+            <li>Il modello vede i dati del tool: non passargli segreti.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p><b>[0:50]</b></p>
+    <p>Chiudi il cerchio aperto alla slide 6: &laquo;vocabolario <b>e</b>
+    sandbox&raquo;. Qui si vede perch&eacute; sono la stessa cosa.</p>
+    <p>La colonna destra &egrave; ci&ograve; che distingue chi ha provato da chi ha
+    letto un blog post. La <b>forma</b> &egrave; chiusa; il <b>contenuto</b> no.</p>
+    <p>Esempio concreto se serve: un item con un campo <code>url</code> libero
+    e un <code>launchUrl</code> dentro = hai appena dato al modello una primitiva
+    di navigazione arbitraria. Non farlo.</p>
+  </aside>
+</section>
+
+<!-- ---------- 28 — APP CHECK (la slide pi&ugrave; pratica) ---------- -->
+<section id="s28" data-slide="28" class="alarm" data-background-color="#170604">
+  <div class="actbar">Atto 4 &middot; <b>La realt&agrave;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">&#9888; Segnatevi questa data</span>App Check diventa obbligatorio</h2>
+    <div class="fill">
+      <div class="countdown">
+        <div class="big">16</div>
+        <div class="lbl">giorni da stasera.<br>
+          <b>2 novembre 2026</b> &middot; enforcement su Firebase AI Logic</div>
+      </div>
+      <blockquote style="font-size:.74em">
+        &ldquo;Starting November 2, 2026, Firebase App Check enforcement will be
+        <b>required</b> to use Firebase AI Logic.&rdquo;
+        <span class="cite">Documentazione Firebase</span>
+      </blockquote>
+      <div class="grid g3 tight" style="margin-top:14px">
+        <div class="card flat"><span class="pill hot">web</span>
+          <p class="caption"><b>solo reCAPTCHA Enterprise</b>, non v3.</p></div>
+        <div class="card flat"><span class="pill">dev</span>
+          <p class="caption">debug provider + <b>token registrato</b>.</p></div>
+        <div class="card flat"><span class="pill hot">trappola</span>
+          <p class="caption">blocca <b>anche l&rsquo;app in locale</b>.</p></div>
+      </div>
+    </div>
+    <div class="footline lava" style="font-size:.78em">
+      &ldquo;The API key passed with the API call is only used for
+      <b>identification</b> of the Firebase project or app.&rdquo;
+      <span class="hl-ocra">&mdash; identifica, non autorizza. Nascondere la chiave
+      non &egrave; una difesa: App Check lo &egrave;.</span></div>
+  </div>
+  <aside class="notes">
+    <p><b>[1:00] &mdash; l&rsquo;informazione pi&ugrave; pratica del talk. Non correre.</b></p>
+    <p>Apri cos&igrave;: &laquo;questa &egrave; l&rsquo;unica slide che vi cambia il
+    calendario di lavoro. Fotografatela.&raquo; (Pausa. Lasciali fotografare.)</p>
+    <p>Sedici giorni da stasera. Chi ha qualcosa in produzione su Firebase AI
+    Logic e non ha App Check, il 2 novembre <b>smette di funzionare</b>.</p>
+    <p>La trappola vera &egrave; la terza card: con l&rsquo;enforcement attivo ti si
+    blocca anche <b>l&rsquo;app in debug sul tuo Mac</b> se non hai registrato il
+    debug token. Lo scopri nel momento peggiore.</p>
+    <p>La citazione in fondo smonta l&rsquo;errore pi&ugrave; comune: &laquo;nascondo
+    la API key&raquo;. Quella chiave <b>identifica</b>, non autorizza. Vale anche
+    per la restrizione per referrer: il <code>Referer</code> lo decide il client.</p>
+    <p><b>Aneddoto in prima persona &mdash; usalo, vale pi&ugrave; della citazione:</b>
+    sul progetto di questa demo l&rsquo;enforcement era <b>gi&agrave; attivo</b>, adesso,
+    non dal 2 novembre. Ogni chiamata a Gemini tornava
+    <code>403 PERMISSION_DENIED &mdash; App attestation failed</code>, <b>anche in
+    locale</b>, anche in debug sul mio Mac. Non &egrave; una scadenza teorica:
+    <b>mi ha bloccato la demo mentre la preparavo</b>. Finch&eacute; quel debug token
+    non &egrave; registrato in console, non parte una sola chiamata.</p>
+    <p><b>Se il 17 ottobre &egrave; passato quando rileggi:</b> aggiorna il numero
+    nel riquadro rosso. &Egrave; l&rsquo;unico dato che scade.</p>
+  </aside>
+</section>
+
+<!-- ---------- 29 ---------- -->
+<section id="s29" data-slide="29">
+  <div class="actbar">Atto 4 &middot; <b>La realt&agrave;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il consiglio pi&ugrave; utile</span>Quando <em>non</em> usarla</h2>
+    <div class="fill">
+      <div class="grid g2">
+        <div class="card lava">
+          <ul>
+            <li><b>Checkout e pagamenti.</b> Il layout non &egrave; un&rsquo;opinione.</li>
+            <li><b>Form critici</b>: dati sanitari, contratti, consensi.</li>
+            <li><b>Flussi regolamentati</b> o con accessibilit&agrave; certificata.</li>
+            <li>Qualunque schermata che deve essere <b>identica ogni volta</b>.</li>
+          </ul>
+        </div>
+        <div class="card ocra" style="display:flex;align-items:center">
+          <p class="lead" style="font-size:1.10em">Se il layout &egrave; un
+            <span class="hl-lava">requisito</span> e non un&rsquo;opinione,<br>
+            non &egrave; un caso da GenUI.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footline">Il posto giusto &egrave; l&rsquo;<b>esplorazione</b>:
+      dati, ricerca, diagnostica, supporto.
+      <span class="hl-ocra">Dove non sai in anticipo cosa serve mostrare.</span></div>
+  </div>
+  <aside class="notes">
+    <p><b>[0:40]</b></p>
+    <p>Veloce e netta. Un talk che dice anche &laquo;non usatelo qui&raquo; vale il
+    doppio di uno che vende.</p>
+    <p>La regola nel riquadro giallo &egrave; quella che si ricordano. Dilla e
+    fermati mezzo secondo.</p>
+  </aside>
+</section>
+
+<!-- ====================================================================== -->
+<!-- CHIUSURA (1:30) + BONUS (stack verticale, fuori dal flusso principale)  -->
+<!-- ====================================================================== -->
+<section>
+
+  <!-- ---------- 30 ---------- -->
+  <section id="s30" data-slide="30">
+    <div class="actbar">Chiusura</div>
+    <div class="wrap">
+      <h2 class="stitle"><span class="kicker">Grazie</span>Tre cose da portarsi a casa</h2>
+      <div class="fill">
+        <div class="takeaways">
+          <div class="tk"><div class="n">1</div><div class="t">Non genera codice: <b>compone da un catalogo che scrivi tu</b>.
+            <span>Quello che viaggia &egrave; JSON. <code>eval</code> non c&rsquo;entra.</span></div></div>
+          <div class="tk"><div class="n">2</div><div class="t">Il catalogo &egrave; <b>vocabolario e sandbox insieme</b>.
+            <span>La forma &egrave; chiusa. I valori restano input non fidato.</span></div></div>
+          <div class="tk"><div class="n">3</div><div class="t">&Egrave; <b>alpha</b>: <code>genui 0.10.3</code>. Pinnala.
+            <span>E metti App Check <b>prima del 2 novembre</b>.</span></div></div>
+        </div>
+        <div class="qrs" style="margin-top:14px">
+          <figure><svg class="qr-svg" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" shape-rendering="crispEdges"><path fill="#F5F1EA" d="M0 0h35v35H0z"/><path stroke="#0A0A0C" d="M1 1.5h7m2 0h2m1 0h2m2 0h6m1 0h1m2 0h7M1 2.5h1m5 0h1m2 0h1m3 0h5m3 0h1m4 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h2m2 0h7m3 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h2m2 0h1m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h4m3 0h1m2 0h1m2 0h3m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h1m3 0h5m3 0h1m5 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h1m2 0h2m1 0h2m2 0h1m2 0h1m1 0h2M1 9.5h1m1 0h5m2 0h1m3 0h3m1 0h1m8 0h5M3 10.5h1m2 0h1m2 0h1m10 0h3m1 0h1m2 0h2m1 0h2m1 0h1M1 11.5h5m1 0h6m3 0h2m1 0h1m1 0h3m1 0h2m2 0h1m1 0h2M1 12.5h2m1 0h3m8 0h2m5 0h1m2 0h1m3 0h4M2 13.5h1m3 0h4m2 0h1m6 0h1m3 0h4m2 0h2m1 0h1M5 14.5h2m1 0h2m1 0h2m2 0h3m3 0h1m2 0h1m1 0h2m4 0h2M2 15.5h2m1 0h1m1 0h1m4 0h1m1 0h2m2 0h3m2 0h1m2 0h2m2 0h3M1 16.5h1m1 0h2m5 0h2m2 0h1m2 0h1m1 0h4m3 0h2m3 0h1M1 17.5h2m1 0h1m2 0h1m1 0h2m1 0h1m4 0h2m1 0h1m2 0h4m1 0h2m3 0h1M1 18.5h2m5 0h2m1 0h1m2 0h1m3 0h5m1 0h1m2 0h2m1 0h4M2 19.5h1m1 0h1m2 0h1m1 0h1m2 0h1m1 0h3m1 0h1m2 0h2m2 0h2m1 0h2m1 0h2M1 20.5h2m1 0h1m6 0h3m2 0h1m1 0h6m4 0h4m1 0h1M1 21.5h3m3 0h1m1 0h1m1 0h3m3 0h1m2 0h1m2 0h1m1 0h2m2 0h2m1 0h2M1 22.5h3m1 0h2m1 0h1m1 0h1m1 0h2m1 0h2m2 0h1m2 0h1m1 0h2m1 0h1m2 0h1m2 0h1M1 23.5h1m1 0h1m2 0h5m1 0h1m1 0h4m3 0h1m3 0h2m1 0h1m1 0h3M1 24.5h1m1 0h1m1 0h2m3 0h3m1 0h1m1 0h1m5 0h6m1 0h3m1 0h1M1 25.5h1m4 0h3m1 0h1m1 0h1m2 0h4m4 0h1m1 0h5M9 26.5h1m3 0h3m3 0h2m3 0h2m3 0h1m1 0h1m1 0h1M1 27.5h7m2 0h4m1 0h2m2 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h2M1 28.5h1m5 0h1m1 0h1m4 0h1m2 0h1m3 0h2m1 0h2m3 0h4M1 29.5h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m2 0h2m2 0h1m1 0h6m1 0h1M1 30.5h1m1 0h3m1 0h1m1 0h2m1 0h3m1 0h2m2 0h2m2 0h3m2 0h5M1 31.5h1m1 0h3m1 0h1m1 0h1m2 0h2m5 0h1m1 0h1m1 0h1m3 0h2M1 32.5h1m5 0h1m2 0h6m1 0h1m4 0h3m1 0h1m2 0h3M1 33.5h7m1 0h2m2 0h1m1 0h1m1 0h4m2 0h4m1 0h1m3 0h1"/></svg><figcaption>Repo<span>github.com/andrea689</span></figcaption></figure>
+          <figure><svg class="qr-svg" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" shape-rendering="crispEdges"><path fill="#F5F1EA" d="M0 0h35v35H0z"/><path stroke="#0A0A0C" d="M1 1.5h7m3 0h4m2 0h6m1 0h1m2 0h7M1 2.5h1m5 0h1m4 0h1m1 0h5m3 0h2m3 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m1 0h2m1 0h1m2 0h3m1 0h2m4 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h2m2 0h1m1 0h3m3 0h1m1 0h1m3 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h2m5 0h1m1 0h2m2 0h1m1 0h1m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h1m3 0h1m1 0h3m1 0h1m1 0h2m4 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h1m1 0h3m1 0h2m2 0h1m2 0h2m1 0h1M1 9.5h1m1 0h5m2 0h1m2 0h4m1 0h1m2 0h1m3 0h1m1 0h5M1 10.5h1m1 0h1m2 0h1m3 0h1m2 0h1m3 0h1m2 0h5m2 0h2m1 0h2m1 0h1M2 11.5h1m1 0h2m1 0h4m5 0h2m1 0h1m1 0h2m2 0h2m2 0h1m1 0h1M5 12.5h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h1m4 0h4m3 0h4M3 13.5h2m1 0h6m1 0h1m5 0h2m2 0h1m1 0h2m2 0h2m2 0h1M3 14.5h3m2 0h1m1 0h1m2 0h1m1 0h3m3 0h2m1 0h1m2 0h1m2 0h1m1 0h2M3 15.5h1m3 0h2m2 0h5m4 0h1m2 0h1m2 0h3m1 0h3M1 16.5h2m1 0h3m2 0h4m4 0h1m2 0h3m1 0h4m2 0h2M1 17.5h1m2 0h2m1 0h1m1 0h1m1 0h3m1 0h1m2 0h1m1 0h1m5 0h1m1 0h2m3 0h1M2 18.5h1m1 0h2m4 0h1m2 0h2m3 0h4m1 0h2m2 0h2m1 0h2m1 0h1M3 19.5h1m3 0h1m1 0h2m2 0h1m2 0h3m2 0h1m1 0h1m1 0h2m1 0h2m1 0h2M3 20.5h2m7 0h2m1 0h1m1 0h6m3 0h1m1 0h5M1 21.5h4m1 0h3m1 0h2m1 0h3m1 0h1m5 0h1m1 0h2m2 0h2m1 0h1M1 22.5h2m2 0h2m2 0h2m1 0h1m2 0h2m2 0h1m4 0h1m1 0h2m2 0h2m1 0h1M1 23.5h1m1 0h1m3 0h1m1 0h1m4 0h6m1 0h2m9 0h1M1 24.5h1m1 0h3m2 0h1m4 0h4m2 0h4m3 0h1m3 0h2m1 0h1M1 25.5h1m2 0h1m1 0h3m1 0h1m2 0h1m1 0h2m1 0h3m3 0h6M9 26.5h1m1 0h1m1 0h2m2 0h1m1 0h3m1 0h1m1 0h1m3 0h1m1 0h3M1 27.5h7m2 0h8m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h2M1 28.5h1m5 0h1m1 0h1m1 0h1m1 0h2m1 0h1m3 0h6m3 0h3m1 0h1M1 29.5h1m1 0h3m1 0h1m1 0h5m5 0h2m2 0h1m1 0h6m1 0h2M1 30.5h1m1 0h3m1 0h1m1 0h2m5 0h3m1 0h1m5 0h1m2 0h2m1 0h2M1 31.5h1m1 0h3m1 0h1m1 0h2m2 0h2m3 0h1m2 0h2m1 0h1m2 0h2m2 0h1M1 32.5h1m5 0h1m3 0h3m3 0h1m1 0h1m2 0h2m5 0h3M1 33.5h7m1 0h1m4 0h2m2 0h1m6 0h1m1 0h2m1 0h1m1 0h1"/></svg><figcaption>Queste slide<span>andrea689.github.io</span></figcaption></figure>
+          <figure><svg class="qr-svg" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 31" shape-rendering="crispEdges"><path fill="#F5F1EA" d="M0 0h31v31H0z"/><path stroke="#0A0A0C" d="M1 1.5h7m1 0h1m3 0h4m2 0h3m1 0h7M1 2.5h1m5 0h1m1 0h2m1 0h1m1 0h1m2 0h3m3 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m5 0h1m3 0h1m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h1m5 0h2m1 0h1m4 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m4 0h1m2 0h1m1 0h4m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m3 0h2m1 0h1m1 0h3m1 0h2m1 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h2m2 0h1m2 0h4m1 0h1M1 9.5h1m1 0h2m1 0h3m5 0h1m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m1 0h2M5 10.5h2m1 0h2m3 0h4m1 0h8m3 0h1M1 11.5h1m1 0h2m2 0h1m4 0h1m1 0h1m2 0h1m1 0h1m2 0h1m1 0h2m1 0h2M1 12.5h2m1 0h1m1 0h1m1 0h1m3 0h1m4 0h1m1 0h1m3 0h3m3 0h1M1 13.5h1m1 0h8m4 0h2m1 0h1m1 0h1m5 0h2M1 14.5h2m3 0h1m2 0h1m3 0h1m1 0h1m1 0h2m1 0h1m2 0h2m2 0h3M1 15.5h2m1 0h4m1 0h6m1 0h8m1 0h1m1 0h3M4 16.5h2m7 0h1m1 0h1m1 0h1m2 0h1m4 0h1m2 0h1M1 17.5h3m1 0h3m1 0h2m2 0h1m1 0h3m1 0h1m1 0h2m1 0h3m1 0h1M3 18.5h1m2 0h1m1 0h1m4 0h1m1 0h1m1 0h1m3 0h2m1 0h1m1 0h3M1 19.5h1m2 0h9m1 0h4m3 0h1m2 0h2m1 0h1M3 20.5h1m1 0h2m3 0h2m2 0h2m2 0h2m1 0h1m1 0h1m3 0h1M2 21.5h1m1 0h6m1 0h1m1 0h3m1 0h11M9 22.5h2m1 0h2m2 0h4m1 0h1m3 0h5M1 23.5h7m1 0h3m3 0h2m2 0h3m1 0h1m1 0h2m1 0h1M1 24.5h1m5 0h1m1 0h1m1 0h6m4 0h1m3 0h2M1 25.5h1m1 0h3m1 0h1m2 0h1m2 0h1m4 0h1m2 0h5m1 0h1m1 0h1M1 26.5h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m3 0h2m1 0h1m3 0h2m1 0h1M1 27.5h1m1 0h3m1 0h1m1 0h2m3 0h2m3 0h2m3 0h1m2 0h1m1 0h1M1 28.5h1m5 0h1m2 0h1m1 0h1m2 0h2m3 0h2m1 0h1m1 0h2m1 0h1M1 29.5h7m1 0h1m2 0h1m2 0h2m2 0h6m1 0h1m1 0h1"/></svg><figcaption>Package<span>pub.dev/packages/genui</span></figcaption></figure>
+          <figure><svg class="qr-svg" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 31" shape-rendering="crispEdges"><path fill="#F5F1EA" d="M0 0h31v31H0z"/><path stroke="#0A0A0C" d="M1 1.5h7m6 0h1m1 0h1m1 0h4m1 0h7M1 2.5h1m5 0h1m2 0h1m3 0h4m1 0h1m1 0h1m1 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h2m2 0h2m1 0h1m4 0h1m1 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h2m1 0h1m2 0h1m2 0h2m1 0h1m1 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h2m1 0h1m4 0h5m1 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h3m1 0h1m2 0h2m5 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h3m3 0h3m2 0h1M1 9.5h1m1 0h5m2 0h4m2 0h3m2 0h1m1 0h5M1 10.5h2m2 0h1m3 0h1m2 0h4m1 0h1m2 0h1m2 0h3m3 0h1M2 11.5h7m2 0h2m1 0h3m2 0h1m1 0h1m3 0h1M1 12.5h4m1 0h1m7 0h1m4 0h1m6 0h1m1 0h1M3 13.5h1m1 0h1m1 0h2m1 0h1m4 0h4m7 0h2M2 14.5h1m3 0h1m3 0h1m2 0h1m6 0h6m3 0h1M1 15.5h3m1 0h4m1 0h1m5 0h4m1 0h2m2 0h3M1 16.5h1m2 0h3m1 0h1m1 0h3m2 0h2m2 0h7m2 0h1M2 17.5h6m1 0h1m1 0h2m3 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2M1 18.5h3m1 0h1m2 0h1m1 0h1m3 0h2m1 0h4m1 0h4m1 0h1m1 0h1M1 19.5h1m1 0h5m1 0h1m2 0h1m1 0h5m2 0h1m1 0h3m1 0h1M1 20.5h1m1 0h1m1 0h1m3 0h1m2 0h3m2 0h1m3 0h3m4 0h1M1 21.5h1m5 0h2m1 0h1m1 0h2m1 0h1m2 0h1m1 0h6m1 0h3M9 22.5h2m7 0h2m1 0h1m3 0h5M1 23.5h7m3 0h1m1 0h1m2 0h1m1 0h4m1 0h1m1 0h3M1 24.5h1m5 0h1m1 0h1m2 0h2m1 0h3m1 0h3m3 0h1m2 0h1M1 25.5h1m1 0h3m1 0h1m1 0h1m1 0h2m3 0h3m2 0h5m1 0h1M1 26.5h1m1 0h3m1 0h1m1 0h1m4 0h2m1 0h1m1 0h3m4 0h4M1 27.5h1m1 0h3m1 0h1m1 0h1m1 0h2m2 0h3m2 0h9M1 28.5h1m5 0h1m2 0h2m1 0h1m1 0h1m5 0h2m1 0h1m1 0h1m1 0h1M1 29.5h7m1 0h8m1 0h1m1 0h1m2 0h3m1 0h1"/></svg><figcaption>Spec A2UI<span>github.com/a2ui-project</span></figcaption></figure>
+        </div>
+      </div>
+      <div class="footline" style="padding:8px 22px;font-size:.68em;margin-top:12px">
+        &darr; 4 slide bonus, se c&rsquo;&egrave; tempo o se arrivano domande</div>
+    </div>
+    <aside class="notes">
+      <p><b>[1:30]</b></p>
+      <p>Leggi i tre takeaway. Sono gli stessi tre di tutto il talk, non
+      aggiungerne un quarto.</p>
+      <p>Lascia i QR su per <b>tutto il Q&amp;A</b>. Non passare oltre.</p>
+      <p><b>Le bonus stanno sotto questa slide</b>: freccia gi&ugrave; (o barra
+      spaziatrice). Sono B1 bloc, B2 JSON custom vs A2UI, B3 multi-turn,
+      B4 deploy web. Usale se lo slot &egrave; da 45 minuti o se la domanda
+      capita.</p>
+      <p>Domande che arrivano sempre: &laquo;quanto costa?&raquo; (slide 25),
+      &laquo;si pu&ograve; usare un modello non Google?&raquo; (A2UI &egrave; un
+      protocollo, il transport lo scrivi tu), &laquo;funziona su web?&raquo; (s&igrave;,
+      &rarr; B4).</p>
+    </aside>
+  </section>
+
+  <!-- ---------- B1 ---------- -->
+  <section id="b1" class="bonus" data-slide="B1">
+    <div class="bonusbadge">Bonus 1 / 4</div>
+    <div class="wrap">
+      <h2 class="stitle"><span class="kicker">Bonus</span>Integrarlo con <code>flutter_bloc</code></h2>
+      <div class="fill">
+        <p class="lead">La doc usa <code>setState</code>. La tua app, probabilmente, no.</p>
+        <!-- SYNCED da lib/bloc/conversation_bloc.dart (righe 91-137) -->
+        <pre class="small" style="margin-top:16px"><span class="codecap">bloc</span><code class="language-dart" data-trim data-line-numbers="2-3|5-7">
+class ConversationBloc extends Bloc&lt;EtnaConversationEvent, EtnaConversationState&gt; {
+  ConversationBloc(this.agent) : super(const EtnaConversationState.initial()) {
+    _subscription = agent.conversation.events.listen(_onGenUiEvent); // genui -&gt; bloc
+  }
+  Future&lt;void&gt; _onMessageSent(MessageSent event, Emitter&lt;EtnaConversationState&gt; emit) async {
+    emit(EtnaConversationState.thinking(surfaceIds: state.activeSurfaceIds));
+    await agent.conversation.sendRequest(genui.ChatMessage.user(event.text));
+  }
+}
+        </code></pre>
+      </div>
+      <div class="footline">Il bloc orchestra i <b>turni</b>.
+        <span class="hl-ocra">Lo stato dei widget resta nel
+        <code>SurfaceController</code>: duplicarlo &egrave; l&rsquo;errore classico.</span></div>
+    </div>
+    <aside class="notes">
+      <p><b>[2:00 &mdash; bonus, fuori dai 35 minuti]</b></p>
+      <p>La trappola: la tentazione di copiare l&rsquo;albero dei widget dentro lo
+      stato del bloc, per &laquo;averlo sotto controllo&raquo;. Non farlo: hai due
+      sorgenti di verit&agrave; che divergono al primo chunk.</p>
+      <p>Regola: <b>il bloc possiede la conversazione, il SurfaceController possiede
+      la UI</b>.</p>
+    </aside>
+  </section>
+
+  <!-- ---------- B2 ---------- -->
+  <section id="b2" class="bonus" data-slide="B2">
+    <div class="bonusbadge">Bonus 2 / 4</div>
+    <div class="wrap">
+      <h2 class="stitle"><span class="kicker">Bonus</span>&laquo;Mi faccio un JSON mio&raquo;</h2>
+      <div class="fill">
+        <div class="grid g2">
+          <div class="card">
+            <span class="tag t-neu">JSON custom tuo</span>
+            <ul>
+              <li>Parti in mezza giornata.</li>
+              <li>Zero dipendenze, zero alpha.</li>
+              <li>Ma parser, streaming parziale, errori e versionamento
+                dello schema <b>li scrivi tu</b>.</li>
+            </ul>
+          </div>
+          <div class="card ocra">
+            <span class="tag t-hot">A2UI</span>
+            <ul>
+              <li>Streaming e composizione parziale gi&agrave; risolti.</li>
+              <li>Formato che altri client sapranno leggere.</li>
+              <li>Ma: v0.9, si muove, e ti porta dietro <code>genui</code>.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footline">Per un prototipo il JSON tuo va benissimo.
+        <span class="hl-ocra">Il costo nascosto &egrave; lo <b>streaming parziale</b>:
+        renderizzare un albero incompleto senza far esplodere la UI.</span></div>
+    </div>
+    <aside class="notes">
+      <p><b>[1:30 &mdash; bonus, fuori dai 35 minuti]</b></p>
+      <p>Domanda legittima e che arriva spesso. Non liquidarla: il JSON custom
+      &egrave; una scelta ragionevole.</p>
+      <p>Il punto dirimente &egrave; lo <b>streaming</b>. Mostrare una card mezza
+      arrivata senza crash &egrave; il 70% del lavoro, ed &egrave; esattamente il
+      pezzo che non pensi di dover scrivere.</p>
+    </aside>
+  </section>
+
+  <!-- ---------- B3 ---------- -->
+  <section id="b3" class="bonus" data-slide="B3">
+    <div class="bonusbadge">Bonus 3 / 4</div>
+    <div class="wrap">
+      <h2 class="stitle"><span class="kicker">Bonus</span>Multi-turn e memoria</h2>
+      <div class="fill">
+        <ul>
+          <li>La conversazione porta i turni precedenti: &laquo;confronta con
+            agosto&raquo; funziona <b>solo</b> se il modello ricorda di quale
+            periodo stavate parlando.</li>
+          <li>Ma la storia include anche <b>gli A2UI emessi</b>: il contesto
+            cresce in fretta, e con lui il costo.</li>
+          <li>Strategia pratica: tieni per intero gli ultimi N turni,
+            <b>riassumi</b> i pi&ugrave; vecchi, e mantieni separato un piccolo
+            stato di dominio (periodo corrente, filtro magnitudo).</li>
+          <li>Gli eventi di UI (slide 10) sono turni a tutti gli effetti:
+            contano nel budget.</li>
+        </ul>
+      </div>
+      <div class="footline lava">Lo stato di dominio in chiaro batte la memoria
+        implicita: <span class="hl-ocra">&egrave; ispezionabile, testabile e non
+        costa token.</span></div>
+    </div>
+    <aside class="notes">
+      <p><b>[1:30 &mdash; bonus, fuori dai 35 minuti]</b></p>
+      <p>Il messaggio: <b>non delegare al modello ci&ograve; che puoi tenere in una
+      variabile</b>. Il periodo selezionato &egrave; un <code>DateTimeRange</code>,
+      non un ricordo.</p>
+      <p>Se c&rsquo;&egrave; tempo, collega alla slide 25: qui si vede da dove viene
+      davvero il costo token.</p>
+    </aside>
+  </section>
+
+  <!-- ---------- B4 ---------- -->
+  <section id="b4" class="bonus" data-slide="B4">
+    <div class="bonusbadge">Bonus 4 / 4</div>
+    <div class="wrap">
+      <h2 class="stitle"><span class="kicker">Bonus</span>Il deploy web, nel dettaglio</h2>
+      <div class="fill">
+        <div class="grid g2" style="align-items:start">
+          <div>
+            <!-- SYNCED da .github/workflows/pages.yml (step "Prepara le slide" e "Builda la demo web") -->
+            <pre class="small"><span class="codecap">build</span><code class="language-bash" data-trim data-line-numbers="5-6|7-10">
+# .github/workflows/pages.yml
+mkdir -p _site
+cp -r slides/. _site/
+flutter pub get
+dart run build_runner build \
+  --delete-conflicting-outputs
+flutter build web --release \
+  --base-href "/genui-flutter-catania/demo/" \
+  --dart-define=RECAPTCHA_SITE_KEY=\
+"${{ vars.RECAPTCHA_SITE_KEY }}"
+            </code></pre>
+            <ul style="margin-top:14px">
+              <li>Slide e demo dalla <b>stessa</b> Action, stesso Pages &mdash; ma
+                lo step demo &egrave; <code>continue-on-error</code>.</li>
+              <li>La site key reCAPTCHA da <b>variable</b> del repo, non dal codice.</li>
+            </ul>
+          </div>
+          <div class="card lava">
+            <span class="tag t-no">I due inciampi</span>
+            <ul>
+              <li>Il <code>base-href</code> sbagliato &rarr; pagina bianca e
+                404 sugli asset. &Egrave; sempre quello.</li>
+              <li>App Check su web vuole <b>reCAPTCHA Enterprise</b>: il dominio
+                <code>andrea689.github.io</code> va registrato nella site key,
+                altrimenti 403 in produzione e nient&rsquo;altro.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="notes">
+      <p><b>[2:00 &mdash; bonus, fuori dai 35 minuti]</b></p>
+      <p>Il deploy web &egrave; la ragione per cui la demo si pu&ograve; provare
+      dal telefono mentre parli. &Egrave; anche il motivo per cui App Check
+      &egrave; obbligatorio davvero, non per compito.</p>
+      <p>Il <code>dart run build_runner build</code> non &egrave; decorazione: i file
+      generati (<code>*.freezed.dart</code>, <code>*.g.dart</code>) sono gitignorati,
+      quindi <b>un clone fresco non compila</b> senza quello step.</p>
+      <p>E la demo pu&ograve; <b>saltare</b>: quello step &egrave;
+      <code>continue-on-error: true</code>. Se la build web fallisce &mdash;
+      <code>genui</code> &egrave; alpha &mdash; le slide vengono pubblicate lo stesso
+      e sotto <code>/demo/</code> finisce una pagina segnaposto che spiega
+      perch&eacute;, invece di un 404. Scelta deliberata: il giorno del talk contano
+      le slide.</p>
+      <p>Sulla site key: &egrave; <b>pubblica per progetto</b>, non &egrave; un
+      segreto. La tieni in una <code>variable</code> del repo solo per poterla
+      ruotare senza toccare il codice.</p>
+      <p>Se rimane tempo, apri la demo su Pages dal telefono e falla girare
+      in diretta: chiude il cerchio meglio di qualsiasi slide.</p>
+    </aside>
+  </section>
+
+</section>
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<!-- reveal.js + plugin, tutti locali -->
+<script src="vendor/reveal.js/dist/reveal.js"></script>
+<script src="vendor/reveal.js/plugin/notes/notes.js"></script>
+<script src="vendor/reveal.js/plugin/highlight/highlight.js"></script>
+<script>
+  Reveal.initialize({
+    // spazio di coordinate 16:9; su 4:3 reveal scala e mette le bande
+    width: 1280,
+    height: 720,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 1.6,
+
+    center: true,
+    hash: true,
+    history: false,          // hash:true + history:false => funziona anche da file://
+    slideNumber: 'c/t',
+    showSlideNumber: 'all',
+    progress: true,
+    controls: true,
+    controlsTutorial: false,
+    overview: true,          // tasto ESC / O
+    keyboard: true,
+    touch: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'fade',
+    fragmentInURL: false,
+    pdfSeparateFragments: false,   // export PDF: una pagina per slide
+    pdfMaxPagesPerSlide: 1,
+
+    plugins: [RevealNotes, RevealHighlight],
+  });
+
+  // scorciatoie comode dal palco
+  Reveal.addKeyBinding({ keyCode: 66, key: 'B', description: 'Schermo nero' },
+    () => document.body.classList.toggle('blackout'));
+</script>
+<style>
+  body.blackout .reveal { visibility: hidden; }
+  body.blackout { background: #000; }
+</style>
+</body>
+</html>
