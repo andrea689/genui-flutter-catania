@@ -151,6 +151,45 @@ sta chiamando.
 Sul lato Dart non serve fare niente: `providerApple` copre sia iOS sia macOS
 (vedi `lib/app/bootstrap.dart`).
 
+#### 🔑 macOS: serve anche il Keychain
+
+```
+[firebase_app_check/code-unsupported] The operation couldn't be completed.
+Keychain access error.
+```
+
+App Check conserva l'ID di installazione nel Keychain, e su macOS l'app
+sandboxata non ci arriva senza un entitlement esplicito. I file
+`macos/Runner/*.entitlements` contengono già:
+
+```xml
+<key>keychain-access-groups</key>
+<array>
+    <string>$(AppIdentifierPrefix)com.example.genuiFlutterCatania</string>
+</array>
+```
+
+**Ma da solo non basta.** `$(AppIdentifierPrefix)` si risolve solo se il target
+è firmato con un **Development Team**, e questo progetto è firmato ad-hoc
+(`CODE_SIGN_IDENTITY = "-"`, nessun team). Serve un passaggio in Xcode:
+
+1. apri `macos/Runner.xcworkspace`
+2. target **Runner** → **Signing & Capabilities**
+3. scegli un **Team** (basta un Apple ID gratuito)
+4. verifica che ci sia la capability **Keychain Sharing**
+
+> Su iOS non serve niente di tutto questo: il problema è solo del sandbox macOS.
+
+#### Se hai fretta: fai la demo sul web
+
+Il web non ha né il problema del Keychain né quello della firma, e per un talk
+è anche più comodo da proiettare. Se macOS fa storie, **non è una battaglia che
+devi vincere**:
+
+```bash
+flutter run -d chrome --dart-define=RECAPTCHA_SITE_KEY=...
+```
+
 #### Per il deploy web (una volta sola)
 
 1. **Google Cloud Console** → crea una site key **reCAPTCHA Enterprise** per

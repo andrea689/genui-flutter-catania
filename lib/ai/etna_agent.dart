@@ -22,7 +22,7 @@ import 'tool_loop.dart';
 /// ragionamento: `--dart-define=GEMINI_MODEL=gemini-3.5-flash`.
 const String kGeminiModel = String.fromEnvironment(
   'GEMINI_MODEL',
-  defaultValue: 'gemini-3.8-flash',
+  defaultValue: 'gemini-3.5-flash',
 );
 
 /// Mette insieme i pezzi: catalogo, system prompt, tool e transport.

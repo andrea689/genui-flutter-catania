@@ -419,3 +419,25 @@ Piu' `gemini-2.5-flash` che si spegne il giorno prima del talk.
 Le ultime due hanno la stessa forma: **l'helper del package e' rimasto indietro
 rispetto al modello**. E' il costo reale dell'alpha, ed e' piu' onesto e piu'
 utile della slide generica su latenza e costi.
+
+### Quinta trappola: il Keychain su macOS
+
+```
+[firebase_app_check/code-unsupported] The operation couldn't be completed.
+Keychain access error.
+```
+
+App Check conserva l'ID di installazione nel Keychain. L'app macOS e'
+sandboxata e senza `keychain-access-groups` non ci arriva. Aggiunto a
+`macos/Runner/{DebugProfile,Release}.entitlements`.
+
+**L'entitlement da solo non basta**: `$(AppIdentifierPrefix)` si risolve solo
+con un Development Team, e il progetto e' firmato ad-hoc
+(`CODE_SIGN_IDENTITY = "-"`, nessun `DEVELOPMENT_TEAM`). Serve un passaggio
+manuale in Xcode che non e' automatizzabile da qui.
+
+Su iOS non si presenta: e' un problema del solo sandbox macOS.
+
+**Decisione pratica per il talk: la demo si fa sul web**, che non ha ne' il
+problema del Keychain ne' quello della firma, ed e' piu' comodo da proiettare.
+macOS resta supportato ma non e' la piattaforma del palco.
