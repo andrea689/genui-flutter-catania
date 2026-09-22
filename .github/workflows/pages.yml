@@ -1,0 +1,105 @@
+name: Deploy slide e demo su GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Permessi richiesti dal deploy su Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un deploy alla volta; non annullare quelli gia in corso
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Le slide sono statiche e vendorizzate: nessuna build, si copiano.
+      # Vanno nella root del sito.
+      - name: Prepara le slide
+        run: |
+          mkdir -p _site
+          cp -r slides/. _site/
+          echo "Slide copiate:"
+          ls -la _site
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: stable
+          cache: true
+
+      # La build web puo fallire: genui e in alpha. Se succede, le slide
+      # vengono pubblicate lo stesso - il giorno del talk contano quelle.
+      - name: Builda la demo web
+        id: demo
+        continue-on-error: true
+        run: |
+          flutter pub get
+          # I file generati (*.g.dart, *.freezed.dart) sono gitignorati
+          dart run build_runner build --delete-conflicting-outputs
+          flutter build web --release \
+            --base-href "/genui-flutter-catania/demo/" \
+            --dart-define=RECAPTCHA_SITE_KEY="${{ vars.RECAPTCHA_SITE_KEY }}"
+
+      - name: Aggiungi la demo al sito
+        if: steps.demo.outcome == 'success'
+        run: |
+          mkdir -p _site/demo
+          cp -r build/web/. _site/demo/
+          echo "Demo pubblicata. Peso del bundle:"
+          du -sh _site/demo
+
+      # Se la build e fallita, /demo/ spiega perche invece di dare 404
+      - name: Segnaposto se la build e fallita
+        if: steps.demo.outcome != 'success'
+        run: |
+          echo "::warning::Build web della demo fallita: pubblico solo le slide."
+          mkdir -p _site/demo
+          cat > _site/demo/index.html <<'HTML'
+          <!doctype html>
+          <html lang="it">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Demo non disponibile</title>
+            <style>
+              body { font-family: system-ui, sans-serif; background: #12100f; color: #f2ede7;
+                     display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 24px; }
+              main { max-width: 34rem; text-align: center; }
+              a { color: #ff7043; }
+            </style>
+          </head>
+          <body>
+            <main>
+              <h1>Demo temporaneamente non disponibile</h1>
+              <p>La build della demo non e riuscita in questo deploy.
+                 Il package <code>genui</code> e in alpha e l'API cambia spesso.</p>
+              <p><a href="../">Vai alle slide</a> ·
+                 <a href="https://github.com/andrea689/genui-flutter-catania">Codice sorgente</a></p>
+            </main>
+          </body>
+          </html>
+          HTML
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
