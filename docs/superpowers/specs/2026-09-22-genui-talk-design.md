@@ -244,3 +244,74 @@ Questi passi vanno anche nel README, per essere ripetibili.
 | Agente **slide** | Deck reveal.js vendorizzato, tema, tutte le slide non-codice |
 | Andrea (Claude) | `.gitignore` ✅, GitHub Action, README, spec |
 | Passata finale | Il codice **vero** della demo entra nelle slide, così gli snippet non mentono |
+
+---
+
+## 9. Scoperte durante l'implementazione
+
+Aggiornato 2026-09-22, dopo aver scritto la demo. Quanto segue **corregge**
+le assunzioni delle sezioni precedenti: dove c'è conflitto, vale questa.
+
+### R1 risolto: A2UI non viaggia come function call
+
+Il rischio principale non esisteva, ma per un motivo che nessun tutorial dice.
+`PromptBuilder.uiGenerationRestriction` (`prompt_builder.dart:63`):
+
+> "Do not use tools or function calls for UI generation. Use JSON text blocks."
+
+I due canali sono **ortogonali**: `response.functionCalls` porta le richieste
+di dati, `response.text` porta l'A2UI. Il tool loop e la generazione della UI
+convivono dentro `onSend` senza pestarsi i piedi, e `ToolLoop.run` inoltra
+`onText` a **ogni** round, non solo all'ultimo.
+
+Questo smentisce la descrizione "prima esaurisci i tool, poi streammi la UI".
+
+### Due trappole non documentate nel package
+
+1. **`flush()` è one-shot.** Chiude `_inputStream` (`a2ui_transport_adapter.dart:88-91`).
+   Chiamarlo a fine turno rompe **tutti** i turni successivi. Da non usare in
+   una chat multi-turno.
+2. **Il parser trattiene il buffer all'infinito** se un turno finisce con una
+   graffa o un fence spaiato, e il residuo sborda nel turno dopo.
+
+Entrambe sono modi in cui la demo si romperebbe in modo inspiegabile dal vivo.
+
+### App Check: l'enforcement è già attivo, non arriva il 2 novembre
+
+Sul progetto `genui-flutter-catania` **ogni chiamata a Gemini è già rifiutata**
+senza un debug token registrato — verificato con chiamate reali:
+`403 PERMISSION_DENIED — App attestation failed`, e, saltando App Check lato
+client, `Firebase App Check token is invalid` dal server di AI Logic.
+
+Il 2 novembre 2026 resta la data in cui diventa obbligatorio **per tutti**.
+
+### Correzioni all'API rispetto a quanto assunto
+
+| Assunto | Reale |
+|---|---|
+| `Surface(host:, surfaceId:)` | `Surface(key:, surfaceContext:)` — il README su pub.dev è vecchio |
+| `CoreCatalogItems` | `BasicCatalogItems`, via `asNoAssetCatalog()` |
+| `widgetBuilder: (data, context)` | `widgetBuilder: (itemContext)` — un solo parametro |
+| `CatalogItem.build()` | non esiste: `widgetBuilder` |
+| `UiActionEvent` | `UserActionEvent`, via `itemContext.dispatchEvent(...)` |
+| `Surface` ha una callback `onEvent` | **non ce l'ha**: l'interazione nasce dentro il `CatalogItem` |
+| `PromptBuilder.chat(systemInstruction:)` | regole via `copyWith(systemPromptFragments: [...])` + `systemPromptJoined()` |
+
+### Bug trovati dai golden test
+
+Non artefatti di test, bug veri: `EventCard` usava `CrossAxisAlignment.stretch`
+dentro una `Row` → vincoli infiniti in una `ListView`, **crash in app**.
+Più badge e `_MiniStat` che sbordavano con metriche di font diverse.
+
+### Numeri misurati
+
+- Bundle web: ~42 MB su disco, **~10 MB di primo caricamento reale**
+  (main.dart.js 3,5 MB + una variante canvaskit; il browser scarica solo la sua)
+- Pipeline CI verificata su clone pulito: `pub get` → `build_runner` → `build web`
+- 38 test verdi, `analyze` pulito, 14 `@Preview` nel gruppo "Catalogo Etna"
+
+### Ancora non verificato
+
+**Nessuno ha visto l'A2UI che Gemini produce davvero** — bloccato da App Check.
+Restano da validare la qualità delle scelte di card e l'aderenza agli schemi.
+È il primo test da fare appena il debug token è registrato.

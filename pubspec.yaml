@@ -17,7 +17,9 @@ dependencies:
   genui: 0.10.3
   json_schema_builder: ^0.1.7
 
-  # Firebase AI Logic + App Check (obbligatorio dal 2 novembre 2026).
+  # Firebase AI Logic + App Check. Obbligatorio per tutti dal 2 novembre 2026,
+  # ma su questo progetto l'enforcement e gia attivo: senza un debug token
+  # registrato, nessuna chiamata a Gemini passa. Vedi README.
   firebase_core: ^4.15.0
   firebase_ai: ^4.0.0
   firebase_app_check: ^0.4.8
