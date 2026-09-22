@@ -9,6 +9,18 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    # `flutter build macos` scarica qui i sorgenti dei plugin via SwiftPM,
+    # test dei package compresi: non sono codice nostro.
+    - build/**
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  errors:
+    # I file generati da build_runner non sono nel repo: senza questo
+    # un checkout pulito segnala errori finche' non giri build_runner.
+    uri_has_not_been_generated: ignore
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

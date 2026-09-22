@@ -95,3 +95,6 @@ app.*.map.json
 **/android/app/google-services.json
 **/ios/Runner/GoogleService-Info.plist
 **/macos/Runner/GoogleService-Info.plist
+
+# SwiftPM (generato dalla build macOS)
+**/macos/**/xcshareddata/swiftpm/
