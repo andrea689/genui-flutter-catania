@@ -27,6 +27,17 @@ final CatalogItem mapCardItem = CatalogItem(
     return MapCard(
       title: data['title'] as String?,
       events: parseSeismicEvents(data['events']),
+      // Stesso giro del tap sulla EventCard: l'epicentro rientra nella
+      // conversazione come nuovo turno. Senza questo la mappa e' inerte,
+      // e la DEMO 3 sul palco non produce niente.
+      onEventTap: (event) => itemContext.dispatchEvent(
+        UserActionEvent(
+          name: 'map_epicenter_tapped',
+          surfaceId: itemContext.surfaceId,
+          sourceComponentId: itemContext.id,
+          context: {'eventId': event.eventId, 'place': event.place},
+        ),
+      ),
     );
   },
 );
