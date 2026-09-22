@@ -63,11 +63,14 @@ class MapCard extends StatelessWidget {
                       ),
                     ),
                     children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'org.flutter.catania.etna',
-                        tileProvider: tileProvider,
+                      _MaybeDarkened(
+                        dark: theme.brightness == Brightness.dark,
+                        child: TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'org.flutter.catania.etna',
+                          tileProvider: tileProvider,
+                        ),
                       ),
                       MarkerLayer(
                         markers: [
@@ -261,3 +264,62 @@ Widget mapCardSwarmDark() =>
 )
 Widget mapCardEmpty() =>
     const MapCard(title: 'Ultime 24 ore', events: <SeismicEvent>[]);
+
+/// Scurisce i tile della mappa quando il tema e' scuro.
+///
+/// I tile restano quelli di OpenStreetMap: liberi, senza chiave, senza
+/// attribuzioni aggiuntive. Le alternative gia' scure (CARTO, Stadia) oggi
+/// vogliono una API key, e sul loro tile compare "API KEY REQUIRED".
+///
+/// E' la stessa ricetta delle dark map sul web — `invert(1) hue-rotate(180deg)`
+/// — applicata **solo ai tile**: i marker restano fuori dal filtro, altrimenti
+/// gli accenti di magnitudo verrebbero invertiti anche loro.
+class _MaybeDarkened extends StatelessWidget {
+  const _MaybeDarkened({required this.dark, required this.child});
+
+  final bool dark;
+  final Widget child;
+
+  /// Inverte i canali. Da sola farebbe diventare i verdi magenta.
+  static const _invert = <double>[
+    -1, 0, 0, 0, 255, //
+    0, -1, 0, 0, 255, //
+    0, 0, -1, 0, 255, //
+    0, 0, 0, 1, 0, //
+  ];
+
+  /// Ruota la tinta di 180 gradi e rimette i colori vicini al naturale:
+  /// il verde torna verde, il mare torna blu, ma su fondo scuro.
+  static const _hueRotate180 = <double>[
+    -0.574, 1.430, 0.144, 0, 0, //
+    0.426, 0.430, 0.144, 0, 0, //
+    0.426, 1.430, -0.856, 0, 0, //
+    0, 0, 0, 1, 0, //
+  ];
+
+  /// Smorza la saturazione al 55%. Senza, il verde del parco tira l'occhio
+  /// piu' degli epicentri, che sono l'unica cosa che conta sulla mappa.
+  static const _desaturate = <double>[
+    0.646, 0.322, 0.032, 0, 0, //
+    0.096, 0.872, 0.032, 0, 0, //
+    0.096, 0.322, 0.582, 0, 0, //
+    0, 0, 0, 1, 0, //
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    if (!dark) return child;
+
+    // L'esterno si applica dopo l'interno: inverte, ruota, smorza.
+    return ColorFiltered(
+      colorFilter: const ColorFilter.matrix(_desaturate),
+      child: ColorFiltered(
+        colorFilter: const ColorFilter.matrix(_hueRotate180),
+        child: ColorFiltered(
+          colorFilter: const ColorFilter.matrix(_invert),
+          child: child,
+        ),
+      ),
+    );
+  }
+}

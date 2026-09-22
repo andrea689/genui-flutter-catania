@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:genui_flutter_catania/catalog/comparison_card/comparison_card.dart';
+import 'package:genui_flutter_catania/catalog/etna_theme.dart';
 import 'package:genui_flutter_catania/catalog/event_card/event_card.dart';
 import 'package:genui_flutter_catania/catalog/map_card/map_card.dart';
 import 'package:genui_flutter_catania/catalog/timeline_chart/timeline_chart.dart';
@@ -156,12 +157,9 @@ Future<void> _pump(
   await tester.pumpWidget(
     MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFD1495B),
-          brightness: brightness,
-        ),
-      ),
+      // Il tema **vero** dell'app, non uno costruito qui: altrimenti i golden
+      // fotografano qualcosa che nessuno vede mai.
+      theme: brightness == Brightness.dark ? EtnaTheme.dark : EtnaTheme.light,
       home: Scaffold(
         body: Center(
           child: SingleChildScrollView(
