@@ -321,9 +321,18 @@ Restano da validare la qualità delle scelte di card e l'aderenza agli schemi.
 `gemini-2.5-flash` **shutdown 16 ottobre 2026**. Il talk e' il 17.
 Tutti i modelli 2.5 chiudono nell'ottobre 2026.
 
-Scelto **`gemini-3.8-flash`** (GA dal 2 settembre 2026, default raccomandato da
-Firebase AI Logic), sovrascrivibile con `--dart-define=GEMINI_MODEL=...`.
-Alternativa prudente: `gemini-3.5-flash`, garantito fino ad almeno maggio 2027.
+Scelto **`gemini-3.5-flash`** (stabile da maggio 2026, garantito fino ad almeno
+maggio 2027), sovrascrivibile con `--dart-define=GEMINI_MODEL=...`.
+
+Prima scelta era `gemini-3.8-flash`, default raccomandato da Firebase AI Logic e
+migliore nel seguire le istruzioni — che per la UI generativa conta, perche' e'
+cio' che tiene i widget dentro lo schema. **Scartato dopo prova sul campo: era
+saturo.** E' GA dal 2 settembre 2026 e si sta prendendo tutto il carico.
+
+Un 503 "model is overloaded" durante la demo non si ripara: non dipende da te e
+non passa con un hot reload. **Per il palco vince la capacita' disponibile, non
+il benchmark.** E' un criterio di scelta che vale la pena dire nel talk: il
+modello piu' nuovo non e' quello giusto per una demo dal vivo.
 
 ### macOS non esiste in Firebase: e' l'app iOS
 

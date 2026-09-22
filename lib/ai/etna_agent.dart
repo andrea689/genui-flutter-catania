@@ -13,13 +13,21 @@ import 'tool_loop.dart';
 /// NON usare `gemini-2.5-flash`: si spegne il **16 ottobre 2026**, cioe' il
 /// giorno prima del talk. Fine di ogni modello 2.5 nell'ottobre 2026.
 ///
-/// `gemini-3.8-flash` e' stabile (GA dal 2 settembre 2026) ed e' il default
-/// raccomandato da Firebase AI Logic. Per la UI generativa conta soprattutto
-/// che segua bene le istruzioni: e' quello che tiene i widget dentro lo schema.
+/// Il default e' `gemini-3.5-flash`: stabile da maggio 2026, garantito fino ad
+/// almeno maggio 2027.
 ///
-/// L'alternativa conservativa e' `gemini-3.5-flash`, stabile da maggio 2026 e
-/// garantito fino ad almeno maggio 2027. Si cambia senza ricompilare il
-/// ragionamento: `--dart-define=GEMINI_MODEL=gemini-3.5-flash`.
+/// **Non e' la scelta prudente per inerzia, e' una scelta misurata.**
+/// `gemini-3.8-flash` sarebbe il default raccomandato da Firebase AI Logic e
+/// segue meglio le istruzioni, che per la UI generativa conta: e' quello che
+/// tiene i widget dentro lo schema. Ma e' GA dal 2 settembre 2026, quindi si
+/// sta prendendo tutto il carico, e in prova rispondeva **saturo**.
+///
+/// Un 503 "model is overloaded" durante una demo dal vivo non si ripara: non
+/// dipende da te e non passa con un hot reload. Per il palco vince la capacita'
+/// disponibile, non il benchmark.
+///
+/// Per provare il 3.8 senza toccare questo file:
+/// `--dart-define=GEMINI_MODEL=gemini-3.8-flash`
 const String kGeminiModel = String.fromEnvironment(
   'GEMINI_MODEL',
   defaultValue: 'gemini-3.5-flash',

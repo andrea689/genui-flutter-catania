@@ -36,7 +36,7 @@ Nessuna schermata hardcoded.
 | Pezzo | Scelta |
 |---|---|
 | GenUI | [`genui`](https://pub.dev/packages/genui) — implementazione Flutter del protocollo aperto [A2UI](https://flutter.dev/blog/new-updates-to-a2ui-and-flutters-genui-package) |
-| AI | Firebase AI Logic → Gemini `3.8-flash` |
+| AI | Firebase AI Logic → Gemini `3.5-flash` |
 | Dati | [INGV FDSN](https://webservices.ingv.it/) — API aperta, senza chiave |
 | Stato | `flutter_bloc` |
 | Modelli | `freezed` + `json_serializable` |
@@ -215,12 +215,19 @@ Serve solo a capire *dove* si rompe, mai in produzione.
 
 ### Il modello
 
-Default: **`gemini-3.8-flash`** (GA dal 2 settembre 2026, raccomandato da
-Firebase AI Logic). Per la UI generativa conta soprattutto quanto bene il
-modello segue le istruzioni: è quello che tiene i widget dentro lo schema.
+Default: **`gemini-3.5-flash`** — stabile da maggio 2026, garantito fino ad
+almeno maggio 2027.
+
+Non è prudenza per inerzia. `gemini-3.8-flash` sarebbe il default raccomandato
+da Firebase AI Logic e segue meglio le istruzioni (che per la UI generativa
+conta: è ciò che tiene i widget dentro lo schema), ma è GA dal 2 settembre 2026
+e si sta prendendo tutto il carico: in prova rispondeva **saturo**.
+
+Un 503 *"model is overloaded"* durante una demo dal vivo non si ripara. Per il
+palco vince la capacità disponibile, non il benchmark.
 
 ```bash
-flutter run --dart-define=GEMINI_MODEL=gemini-3.5-flash   # più conservativo
+flutter run --dart-define=GEMINI_MODEL=gemini-3.8-flash   # se vuoi riprovarlo
 ```
 
 > ⚠️ **Non usare `gemini-2.5-flash`**: si spegne il **16 ottobre 2026**.
