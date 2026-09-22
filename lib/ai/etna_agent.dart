@@ -10,8 +10,20 @@ import 'tool_loop.dart';
 
 /// Il modello Gemini usato dalla demo.
 ///
-/// Da riverificare prima del talk: la disponibilita' dei modelli cambia.
-const String kGeminiModel = 'gemini-2.5-flash';
+/// NON usare `gemini-2.5-flash`: si spegne il **16 ottobre 2026**, cioe' il
+/// giorno prima del talk. Fine di ogni modello 2.5 nell'ottobre 2026.
+///
+/// `gemini-3.8-flash` e' stabile (GA dal 2 settembre 2026) ed e' il default
+/// raccomandato da Firebase AI Logic. Per la UI generativa conta soprattutto
+/// che segua bene le istruzioni: e' quello che tiene i widget dentro lo schema.
+///
+/// L'alternativa conservativa e' `gemini-3.5-flash`, stabile da maggio 2026 e
+/// garantito fino ad almeno maggio 2027. Si cambia senza ricompilare il
+/// ragionamento: `--dart-define=GEMINI_MODEL=gemini-3.5-flash`.
+const String kGeminiModel = String.fromEnvironment(
+  'GEMINI_MODEL',
+  defaultValue: 'gemini-3.8-flash',
+);
 
 /// Mette insieme i pezzi: catalogo, system prompt, tool e transport.
 ///

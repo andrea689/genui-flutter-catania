@@ -315,3 +315,26 @@ Più badge e `_MiniStat` che sbordavano con metriche di font diverse.
 **Nessuno ha visto l'A2UI che Gemini produce davvero** — bloccato da App Check.
 Restano da validare la qualità delle scelte di card e l'aderenza agli schemi.
 È il primo test da fare appena il debug token è registrato.
+
+### Il modello si spegne il giorno prima del talk
+
+`gemini-2.5-flash` **shutdown 16 ottobre 2026**. Il talk e' il 17.
+Tutti i modelli 2.5 chiudono nell'ottobre 2026.
+
+Scelto **`gemini-3.8-flash`** (GA dal 2 settembre 2026, default raccomandato da
+Firebase AI Logic), sovrascrivibile con `--dart-define=GEMINI_MODEL=...`.
+Alternativa prudente: `gemini-3.5-flash`, garantito fino ad almeno maggio 2027.
+
+### macOS non esiste in Firebase: e' l'app iOS
+
+La Console non offre un tipo di app "macOS" — solo web, iOS, Android.
+Non e' una mancanza: **macOS usa la registrazione Apple**, cioe' quella iOS.
+In `firebase_options.dart` macOS e iOS hanno lo **stesso appId**
+(`1:513967163990:ios:e8f734cc39e8ddbeb409f7`).
+
+Conseguenza pratica: il debug token stampato da `flutter run -d macos` va
+registrato **sotto l'app iOS**. Registrarlo sotto l'app web non ha effetto,
+perche' App Check verifica il token contro la registrazione dell'app chiamante.
+
+Ogni piattaforma ha il suo token: web, iOS/macOS e Android sono tre token
+distinti, e cambiano a ogni reinstallazione.

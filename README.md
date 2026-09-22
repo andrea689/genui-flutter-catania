@@ -36,7 +36,7 @@ Nessuna schermata hardcoded.
 | Pezzo | Scelta |
 |---|---|
 | GenUI | [`genui`](https://pub.dev/packages/genui) — implementazione Flutter del protocollo aperto [A2UI](https://flutter.dev/blog/new-updates-to-a2ui-and-flutters-genui-package) |
-| AI | Firebase AI Logic → Gemini |
+| AI | Firebase AI Logic → Gemini `3.8-flash` |
 | Dati | [INGV FDSN](https://webservices.ingv.it/) — API aperta, senza chiave |
 | Stato | `flutter_bloc` |
 | Modelli | `freezed` + `json_serializable` |
@@ -125,6 +125,32 @@ e una `SURFACE`. Questo script è anche lo smoke test del giro completo.
 >
 > **Se devi fare una demo dal vivo, verificalo la sera prima** — non la mattina.
 
+#### 🍎 macOS: il token va sotto l'app **iOS**, non sotto quella web
+
+La Firebase Console non ha un tipo di app "macOS": puoi creare solo **web, iOS
+e Android**. Non è una dimenticanza — **macOS usa la registrazione dell'app
+Apple**, cioè quella iOS.
+
+La prova sta in `lib/firebase_options.dart`, dove macOS e iOS hanno lo **stesso
+`appId`**:
+
+```dart
+static const FirebaseOptions ios = FirebaseOptions(
+  appId: '1:513967163990:ios:e8f734cc39e8ddbeb409f7', // <-- stesso
+);
+static const FirebaseOptions macos = FirebaseOptions(
+  appId: '1:513967163990:ios:e8f734cc39e8ddbeb409f7', // <-- appId
+);
+```
+
+Quindi il debug token stampato da `flutter run -d macos` va registrato sotto
+**l'app iOS**. Registrarlo sotto l'app web non ha effetto: sono due
+registrazioni diverse, e App Check verifica il token contro quella dell'app che
+sta chiamando.
+
+Sul lato Dart non serve fare niente: `providerApple` copre sia iOS sia macOS
+(vedi `lib/app/bootstrap.dart`).
+
 #### Per il deploy web (una volta sola)
 
 1. **Google Cloud Console** → crea una site key **reCAPTCHA Enterprise** per
@@ -147,6 +173,20 @@ In caso di guasto sul palco, `--dart-define=SKIP_APP_CHECK=true` salta
 l'inizializzazione di App Check per isolare il problema. **Non è una via
 d'uscita**: il server di Firebase AI Logic rifiuta comunque la richiesta.
 Serve solo a capire *dove* si rompe, mai in produzione.
+
+### Il modello
+
+Default: **`gemini-3.8-flash`** (GA dal 2 settembre 2026, raccomandato da
+Firebase AI Logic). Per la UI generativa conta soprattutto quanto bene il
+modello segue le istruzioni: è quello che tiene i widget dentro lo schema.
+
+```bash
+flutter run --dart-define=GEMINI_MODEL=gemini-3.5-flash   # più conservativo
+```
+
+> ⚠️ **Non usare `gemini-2.5-flash`**: si spegne il **16 ottobre 2026**.
+> Tutti i modelli 2.5 chiudono nell'ottobre 2026. `gemini-3.5-flash` è
+> garantito fino ad almeno maggio 2027 ed è l'alternativa prudente.
 
 ## Widget Previewer
 
