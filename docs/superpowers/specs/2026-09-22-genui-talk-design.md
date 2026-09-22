@@ -338,3 +338,38 @@ perche' App Check verifica il token contro la registrazione dell'app chiamante.
 
 Ogni piattaforma ha il suo token: web, iOS/macOS e Android sono tre token
 distinti, e cambiano a ogni reinstallazione.
+
+### Terza trappola: `Content.functionResponses()` e' rotto con Gemini 3.x
+
+`firebase_ai` 4.0.0 hardcoda il ruolo `'function'` (`content.dart:62`):
+
+```dart
+static Content functionResponses(Iterable<FunctionResponse> responses) =>
+    Content('function', responses.toList());
+```
+
+Gemini 3.x lo rifiuta:
+
+> Role 'function' is not supported. Please use a valid role: SYSTEM, SYSTEM_1,
+> USER, ASSISTANT, DEVELOPER, CONTEXT, USER_CONTEXT, MODEL, USER.
+
+I ruoli validi sono `'user'` e `'model'`: **la risposta di un tool rientra come
+turno `'user'`**. L'helper del package e' rimasto indietro rispetto al modello.
+
+Si manifesta **solo al secondo round** del tool loop, cioe' solo contro l'API
+vera e solo quando il modello chiede davvero dati. Nessun test con un fake lo
+vede. Bloccato da `test/ai/firebase_llm_gateway_test.dart`, che asserisce i
+ruoli prodotti e fallisce se qualcuno "semplifica" tornando all'helper.
+
+### Nota per il talk
+
+Tre trappole trovate in tre punti diversi dello stack, tutte invisibili finche'
+non si va in rete:
+
+1. `flush()` one-shot nel transport di `genui`
+2. il parser che trattiene il buffer su JSON non chiuso
+3. il ruolo `'function'` in `firebase_ai` contro Gemini 3.x
+
+Piu' il modello che si spegne il giorno prima del talk. E' materiale onesto per
+l'Atto 4: l'ecosistema si muove piu' in fretta di quanto la doc riesca a stare
+dietro, e questo e' il costo reale di lavorare su roba in alpha.

@@ -16,7 +16,7 @@ class FirebaseLlmGateway implements LlmGateway {
   @override
   Stream<LlmEvent> streamTurn(List<LlmMessage> history) async* {
     final stream = model.generateContentStream(
-      history.map(_toContent),
+      history.map(toContent),
       tools: tools,
     );
 
@@ -35,12 +35,22 @@ class FirebaseLlmGateway implements LlmGateway {
     }
   }
 
-  static Content _toContent(LlmMessage message) => switch (message) {
+  /// Traduce un messaggio neutro in un [Content] di `firebase_ai`.
+  ///
+  /// Visibile per i test: e' l'unico punto che conosce i ruoli accettati dal
+  /// modello, e sbagliarli si scopre solo contro l'API vera.
+  static Content toContent(LlmMessage message) => switch (message) {
     LlmUserText(:final text) => Content.text(text),
     LlmModelCalls(:final calls) => Content.model([
       for (final call in calls) FunctionCall(call.name, call.args, id: call.id),
     ]),
-    LlmToolResults(:final results) => Content.functionResponses([
+    // ATTENZIONE: qui NON si usa Content.functionResponses(), che in
+    // firebase_ai 4.0.0 hardcoda il ruolo 'function'. Gemini 3.x lo rifiuta:
+    //   Role 'function' is not supported. Please use a valid role:
+    //   SYSTEM, SYSTEM_1, USER, ASSISTANT, DEVELOPER, CONTEXT, ...
+    // I ruoli validi sono 'user' e 'model': la risposta di un tool rientra
+    // come turno 'user'. L'helper del package e' rimasto indietro sul modello.
+    LlmToolResults(:final results) => Content('user', [
       for (final result in results)
         FunctionResponse(result.name, result.payload, id: result.id),
     ]),
