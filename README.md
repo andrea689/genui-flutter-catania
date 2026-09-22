@@ -223,7 +223,8 @@ flutter run -d chrome --dart-define=RECAPTCHA_SITE_KEY=...
    il dominio `andrea689.github.io`
    *(per il web è l'unico provider supportato — reCAPTCHA v3 non va bene)*
 2. **Firebase Console** → App Check → registra l'app web con quella site key
-3. Metti la site key nella repo variable `RECAPTCHA_SITE_KEY` (vedi [Deploy](#deploy))
+3. Metti la site key in `RECAPTCHA_SITE_KEY`, come **variable** o come
+   **secret** — la Action accetta entrambi (vedi [Deploy](#deploy))
 
 ---
 
@@ -300,10 +301,20 @@ il giorno del talk contano quelle.
 Per attivarlo sul repo:
 
 1. **Settings → Pages** → Source: **GitHub Actions**
-2. **Settings → Secrets and variables → Actions → Variables** → crea
+2. **Settings → Secrets and variables → Actions** → crea
    `RECAPTCHA_SITE_KEY` con la site key reCAPTCHA Enterprise
-   *(è pubblica per design, ma tenerla in una variable permette di ruotarla
-   senza toccare il codice)*
+
+   Va bene sia come **variable** sia come **secret**: la Action legge
+   `vars.RECAPTCHA_SITE_KEY || secrets.RECAPTCHA_SITE_KEY`.
+
+   > La site key **è pubblica per design** — finisce nel bundle JS e chiunque
+   > può leggerla dal sito — quindi non è un segreto e una *variable* è il
+   > posto più onesto. Come *secret* funziona lo stesso, con un piccolo
+   > svantaggio: GitHub maschera i secret nei log, quindi se un giorno devi
+   > capire con che valore è stata fatta una build, vedi `***`.
+
+   Se manca, la build di release **non parte** e mostra una schermata che
+   spiega cosa fare: senza App Check ogni chiamata a Gemini prenderebbe 403.
 
 ## Slide
 

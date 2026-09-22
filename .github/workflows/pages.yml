@@ -48,7 +48,7 @@ jobs:
           dart run build_runner build --delete-conflicting-outputs
           flutter build web --release \
             --base-href "/genui-flutter-catania/demo/" \
-            --dart-define=RECAPTCHA_SITE_KEY="${{ vars.RECAPTCHA_SITE_KEY }}"
+            --dart-define=RECAPTCHA_SITE_KEY="${{ vars.RECAPTCHA_SITE_KEY || secrets.RECAPTCHA_SITE_KEY }}"
 
       - name: Aggiungi la demo al sito
         if: steps.demo.outcome == 'success'
