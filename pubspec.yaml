@@ -24,6 +24,10 @@ dependencies:
   firebase_ai: ^4.0.0
   firebase_app_check: ^0.4.8
 
+  # Il testo in chiaro del modello e' markdown. Stesso renderer che usa il
+  # `Text` del catalogo base di genui, che lo porta gia' come dipendenza.
+  flutter_markdown_plus: ^1.0.12
+
   # Stato.
   bloc: ^9.2.1
   flutter_bloc: ^9.1.1

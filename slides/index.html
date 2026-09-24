@@ -533,21 +533,27 @@ runApp(w); <span class="c">// ?!</span></div>
           </ul>
         </div>
         <div>
-          <!-- SYNCED da lib/ui/chat_page.dart (righe 77-101) -->
-          <pre><span class="codecap">rendering</span><code class="language-dart" data-trim data-line-numbers="7-12|10-11">
+          <!-- SYNCED da lib/ui/chat_page.dart (righe 85-105) -->
+          <pre class="small"><span class="codecap">rendering</span><code class="language-dart" data-trim data-line-numbers="10-18|15-16">
 // lib/ui/chat_page.dart, dentro la ListView
-if (state.assistantText.isNotEmpty)
-  Text(state.assistantText, /* style: ... */),
-
-// Ogni surface e' una risposta composta
-// dal modello.
-for (final surfaceId in state.activeSurfaceIds)
-  Surface(
-    key: ValueKey(surfaceId),
-    surfaceContext: bloc.agent.controller
-        .contextFor(surfaceId),
-  ),
-
+for (final turn in state.turns) ...[
+  if (turn.userMessage case final message?)
+    _UserMessage(message),
+  if (turn.text.trim() case final text
+      when text.isNotEmpty)
+    _AssistantMessage(text),
+  // Ogni surface e' una risposta composta
+  // dal modello.
+  for (final surfaceId in turn.surfaceIds)
+    _SurfaceFrame(
+      surfaceId: surfaceId,
+      child: Surface(
+        key: ValueKey(surfaceId),
+        surfaceContext: bloc.agent.controller
+            .contextFor(surfaceId),
+      ),
+    ),
+],
 if (state.isThinking) const _Thinking(),
           </code></pre>
         </div>
@@ -658,7 +664,7 @@ final Schema seismicEventSchema = S.object(
   <div class="wrap">
     <h2 class="stitle"><span class="kicker">Dove entri tu</span>Transport e streaming</h2>
     <div class="fill">
-      <!-- SYNCED da lib/ai/tool_loop.dart (righe 48-73) e lib/ai/etna_agent.dart (righe 103-106) -->
+      <!-- SYNCED da lib/ai/tool_loop.dart (righe 48-73) e lib/ai/etna_agent.dart (righe 127-130) -->
       <pre class="small"><span class="codecap">transport</span><code class="language-dart" data-trim data-line-numbers="1-2|6-11|12-13">
 // lib/ai/etna_agent.dart — il corpo di onSend
 await loop.run(history: _history, onText: transport.addChunk);
@@ -1106,7 +1112,7 @@ final CatalogItem eventCardItem = CatalogItem(
   <div class="wrap">
     <h2 class="stitle"><span class="kicker">L&rsquo;ultimo pezzo</span>Il system prompt</h2>
     <div class="fill">
-      <!-- SYNCED da lib/ai/etna_agent.dart (righe 36-40) e lib/catalog/etna_catalog.dart (righe 36-57) -->
+      <!-- SYNCED da lib/ai/etna_agent.dart (righe 57-61) e lib/catalog/etna_catalog.dart (righe 36-57) -->
       <pre class="small"><span class="codecap">prompt</span><code class="language-dart" data-trim data-line-numbers="1-2|4-5|7-10">
 final promptBuilder = PromptBuilder.chat(catalog: effectiveCatalog); // etna_agent.dart
 systemInstruction: Content.system(promptBuilder.systemPromptJoined()),
@@ -1511,14 +1517,14 @@ testWidgets('EventCard', (tester) async {
       <h2 class="stitle"><span class="kicker">Bonus</span>Integrarlo con <code>flutter_bloc</code></h2>
       <div class="fill">
         <p class="lead">La doc usa <code>setState</code>. La tua app, probabilmente, no.</p>
-        <!-- SYNCED da lib/bloc/conversation_bloc.dart (righe 91-137) -->
+        <!-- SYNCED da lib/bloc/conversation_bloc.dart (righe 108-171) -->
         <pre class="small" style="margin-top:16px"><span class="codecap">bloc</span><code class="language-dart" data-trim data-line-numbers="2-3|5-7">
 class ConversationBloc extends Bloc&lt;EtnaConversationEvent, EtnaConversationState&gt; {
   ConversationBloc(this.agent) : super(const EtnaConversationState.initial()) {
     _subscription = agent.conversation.events.listen(_onGenUiEvent); // genui -&gt; bloc
   }
   Future&lt;void&gt; _onMessageSent(MessageSent event, Emitter&lt;EtnaConversationState&gt; emit) async {
-    emit(EtnaConversationState.thinking(surfaceIds: state.activeSurfaceIds));
+    emit(EtnaConversationState.thinking(turns: [...state.turns, ChatTurn(userMessage: event.text)]));
     await agent.conversation.sendRequest(genui.ChatMessage.user(event.text));
   }
 }

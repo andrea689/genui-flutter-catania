@@ -471,7 +471,7 @@ packages:
     source: hosted
     version: "8.3.2"
   flutter_markdown_plus:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_markdown_plus
       sha256: fce641d6c2106cc495de1cd603f97a4f9d615a97a64011928ded380dbdade935

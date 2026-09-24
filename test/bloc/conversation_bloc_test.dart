@@ -4,6 +4,7 @@
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:genui/genui.dart' as genui;
 import 'package:genui_flutter_catania/ai/etna_agent.dart';
 import 'package:genui_flutter_catania/ai/llm_gateway.dart';
 import 'package:genui_flutter_catania/bloc/conversation_bloc.dart';
@@ -191,5 +192,121 @@ void main() {
       final lastHistory = gateway.histories.last;
       expect(lastHistory.whereType<LlmUserText>(), hasLength(2));
     });
+
+    test(
+      'i messaggi dell utente restano nella chat, ognuno col suo giro',
+      () async {
+        final script = _eventCardScript()
+          ..add([
+            const LlmTextDelta('Ecco anche la mappa.\n'),
+            const LlmTextDelta(
+              '```json\n{"version":"v0.9","createSurface":'
+              '{"surfaceId":"s2","catalogId":"${EtnaCatalog.catalogId}"}}\n```\n',
+            ),
+            const LlmTextDelta(
+              '```json\n{"version":"v0.9","updateComponents":'
+              '{"surfaceId":"s2","components":[{"id":"root",'
+              '"component":"MapCard","events":[]}]}}\n```\n',
+            ),
+          ]);
+
+        final gateway = _ScriptedGateway(script);
+        final agent = _agent(gateway);
+        addTearDown(agent.dispose);
+        final bloc = ConversationBloc(agent);
+        addTearDown(bloc.close);
+
+        bloc.add(const EtnaConversationEvent.messageSent('scossa piu forte'));
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        bloc.add(const EtnaConversationEvent.messageSent('e la mappa?'));
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+
+        final turns = bloc.state.turns;
+        expect(turns.map((turn) => turn.userMessage), [
+          'scossa piu forte',
+          'e la mappa?',
+        ]);
+        // Testo e surface stanno sotto la domanda a cui rispondono.
+        expect(turns[0].text, contains('Zafferana Etnea'));
+        expect(turns[0].surfaceIds, ['s1']);
+        expect(turns[1].text, contains('Ecco anche la mappa'));
+        expect(turns[1].text, isNot(contains('Zafferana')));
+        expect(turns[1].surfaceIds, ['s2']);
+      },
+    );
+
+    test(
+      'il messaggio dell utente compare subito, prima della risposta',
+      () async {
+        final gateway = _ScriptedGateway(_eventCardScript());
+        final agent = _agent(gateway);
+        addTearDown(agent.dispose);
+        final bloc = ConversationBloc(agent);
+        addTearDown(bloc.close);
+
+        final first = bloc.stream.first;
+        bloc.add(
+          const EtnaConversationEvent.messageSent(
+            'dimmi della scossa piu forte',
+          ),
+        );
+
+        final state = await first;
+        expect(state, isA<ConversationThinking>());
+        expect(state.turns.single.userMessage, 'dimmi della scossa piu forte');
+        expect(state.turns.single.surfaceIds, isEmpty);
+
+        // Lascia finire il giro prima del tearDown.
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      },
+    );
+
+    test('una risposta di solo testo chiude il giro', () async {
+      final gateway = _ScriptedGateway([
+        [const LlmTextDelta('Chiedimi pure dell Etna.')],
+      ]);
+      final agent = _agent(gateway);
+      addTearDown(agent.dispose);
+      final bloc = ConversationBloc(agent);
+      addTearDown(bloc.close);
+
+      bloc.add(const EtnaConversationEvent.messageSent('ciao'));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+
+      expect(bloc.state.isThinking, isFalse);
+      expect(bloc.state.activeSurfaceIds, isEmpty);
+      expect(bloc.state.assistantText, 'Chiedimi pure dell Etna.');
+    });
+
+    test(
+      'una richiesta partita da un tap apre un giro senza messaggio',
+      () async {
+        final script = _eventCardScript()
+          ..add([const LlmTextDelta('Ecco il dettaglio.')]);
+        final gateway = _ScriptedGateway(script);
+        final agent = _agent(gateway);
+        addTearDown(agent.dispose);
+        final bloc = ConversationBloc(agent);
+        addTearDown(bloc.close);
+
+        bloc.add(const EtnaConversationEvent.messageSent('scossa piu forte'));
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+
+        // Il tap su una card non passa dal bloc: il SurfaceController chiama
+        // direttamente sendRequest.
+        await agent.conversation.sendRequest(
+          genui.ChatMessage.user('L utente ha toccato la card'),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+
+        final turns = bloc.state.turns;
+        expect(turns, hasLength(2));
+        expect(turns[1].userMessage, isNull);
+        // Il parser A2UI trattiene l'a-capo dopo l'ultimo blocco JSON del giro
+        // prima e lo rilascia col primo chunk di questo: la UI lo rifila.
+        expect(turns[1].text.trim(), 'Ecco il dettaglio.');
+        expect(bloc.state.isThinking, isFalse);
+      },
+    );
   });
 }

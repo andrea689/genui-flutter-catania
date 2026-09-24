@@ -8,9 +8,28 @@ import '../ai/etna_agent.dart';
 
 part 'conversation_bloc.freezed.dart';
 
+/// Un giro della chat: il messaggio dell'utente e la risposta del modello.
+///
+/// Della risposta il bloc tiene il testo in chiaro e gli **id** delle surface.
+/// Solo gli id: lo stato dei widget resta nel `SurfaceController`.
+@freezed
+abstract class ChatTurn with _$ChatTurn {
+  const factory ChatTurn({
+    /// Quello che ha scritto l'utente. Null se il giro l'ha aperto un tap su
+    /// una card, che arriva al modello senza passare dal bloc.
+    String? userMessage,
+
+    /// Il testo in chiaro del modello, senza i blocchi A2UI.
+    @Default('') String text,
+
+    /// Le surface composte in risposta a questo giro.
+    @Default(<String>[]) List<String> surfaceIds,
+  }) = _ChatTurn;
+}
+
 /// Cosa puo' succedere in una conversazione.
 ///
-/// I primi due eventi arrivano dalla UI, gli altri dal package `genui`:
+/// Il primo evento arriva dalla UI, gli altri dal package `genui`:
 /// il bloc e' il punto in cui i due mondi si incontrano.
 @freezed
 sealed class EtnaConversationEvent with _$EtnaConversationEvent {
@@ -31,52 +50,50 @@ sealed class EtnaConversationEvent with _$EtnaConversationEvent {
   /// E' arrivato testo in chiaro dal modello.
   const factory EtnaConversationEvent.textReceived(String text) = TextReceived;
 
+  /// Il modello ha finito di rispondere.
+  const factory EtnaConversationEvent.replyCompleted() = ReplyCompleted;
+
   /// Qualcosa e' andato storto.
   const factory EtnaConversationEvent.failed(String message) =
       ConversationFailed;
 }
 
 /// Lo stato della conversazione.
+///
+/// Ogni variante porta la chat intera, giro per giro: cambiare stato non
+/// cancella niente di quello che e' gia' a schermo.
 @freezed
 sealed class EtnaConversationState with _$EtnaConversationState {
-  /// Niente e' ancora successo.
-  const factory EtnaConversationState.initial() = ConversationInitial;
+  /// Niente e' ancora successo: la chat e' vuota.
+  const factory EtnaConversationState.initial({
+    @Default(<ChatTurn>[]) List<ChatTurn> turns,
+  }) = ConversationInitial;
 
-  /// In attesa del modello. Le surface gia' presenti restano a schermo.
+  /// In attesa del modello.
   const factory EtnaConversationState.thinking({
-    @Default(<String>[]) List<String> surfaceIds,
-    @Default('') String text,
+    required List<ChatTurn> turns,
   }) = ConversationThinking;
 
-  /// Il modello ha risposto: ci sono surface da renderizzare.
+  /// Il modello ha risposto, o ha gia' composto almeno una surface.
   const factory EtnaConversationState.surfaces({
-    required List<String> surfaceIds,
-    @Default('') String text,
+    required List<ChatTurn> turns,
   }) = ConversationSurfaces;
 
-  /// Errore, con le surface gia' composte ancora a schermo.
+  /// Errore, con la chat fin qui ancora a schermo.
   const factory EtnaConversationState.error({
     required String message,
-    @Default(<String>[]) List<String> surfaceIds,
+    required List<ChatTurn> turns,
   }) = ConversationErrorState;
 
   const EtnaConversationState._();
 
-  /// Le surface attive, qualunque sia lo stato.
-  List<String> get activeSurfaceIds => switch (this) {
-    ConversationInitial() => const [],
-    ConversationThinking(:final surfaceIds) => surfaceIds,
-    ConversationSurfaces(:final surfaceIds) => surfaceIds,
-    ConversationErrorState(:final surfaceIds) => surfaceIds,
-  };
+  /// Le surface attive, di tutti i giri.
+  List<String> get activeSurfaceIds => [
+    for (final turn in turns) ...turn.surfaceIds,
+  ];
 
-  /// L'ultimo testo in chiaro del modello.
-  String get assistantText => switch (this) {
-    ConversationInitial() => '',
-    ConversationThinking(:final text) => text,
-    ConversationSurfaces(:final text) => text,
-    ConversationErrorState() => '',
-  };
+  /// Il testo in chiaro dell'ultimo giro.
+  String get assistantText => turns.lastOrNull?.text ?? '';
 
   /// Se true, la UI mostra l'indicatore di attesa.
   bool get isThinking => this is ConversationThinking;
@@ -96,16 +113,18 @@ class ConversationBloc
     on<SurfaceAppeared>(_onSurfaceAppeared);
     on<SurfaceVanished>(_onSurfaceVanished);
     on<TextReceived>(_onTextReceived);
+    on<ReplyCompleted>(_onReplyCompleted);
     on<ConversationFailed>(_onFailed);
 
     _subscription = agent.conversation.events.listen(_onGenUiEvent);
+    agent.conversation.state.addListener(_onGenUiState);
   }
 
   final EtnaAgent agent;
   late final StreamSubscription<genui.ConversationEvent> _subscription;
 
-  /// Il testo in chiaro si accumula a chunk: va concatenato, non sostituito.
-  final StringBuffer _text = StringBuffer();
+  /// L'ultimo `isWaiting` letto dallo stato della [genui.Conversation].
+  bool _waiting = false;
 
   /// Traduce gli eventi del package in eventi del bloc.
   void _onGenUiEvent(genui.ConversationEvent event) {
@@ -125,12 +144,27 @@ class ConversationBloc
     }
   }
 
+  /// La fine di una risposta non e' un evento del package: si legge dal suo
+  /// stato, quando `isWaiting` torna false.
+  void _onGenUiState() {
+    final waiting = agent.conversation.state.value.isWaiting;
+    if (_waiting && !waiting) add(const EtnaConversationEvent.replyCompleted());
+    _waiting = waiting;
+  }
+
   Future<void> _onMessageSent(
     MessageSent event,
     Emitter<EtnaConversationState> emit,
   ) async {
-    _text.clear();
-    emit(EtnaConversationState.thinking(surfaceIds: state.activeSurfaceIds));
+    // Il messaggio entra in chat subito, prima che il modello risponda.
+    emit(
+      EtnaConversationState.thinking(
+        turns: [
+          ...state.turns,
+          ChatTurn(userMessage: event.text),
+        ],
+      ),
+    );
     // `sendRequest` inoltra a onSend, dove gira il tool loop. Gli eventi di
     // ritorno rientrano dal listener qui sopra.
     await agent.conversation.sendRequest(genui.ChatMessage.user(event.text));
@@ -140,7 +174,13 @@ class ConversationBloc
     ThinkingStarted event,
     Emitter<EtnaConversationState> emit,
   ) {
-    emit(EtnaConversationState.thinking(surfaceIds: state.activeSurfaceIds));
+    // Un messaggio scritto ha gia' aperto il suo giro in _onMessageSent. Se
+    // non si sta aspettando, la richiesta e' partita da un tap su una card:
+    // il giro nuovo non ha un messaggio dell'utente da mostrare.
+    if (state.isThinking) return;
+    emit(
+      EtnaConversationState.thinking(turns: [...state.turns, const ChatTurn()]),
+    );
   }
 
   void _onSurfaceAppeared(
@@ -150,8 +190,10 @@ class ConversationBloc
     if (state.activeSurfaceIds.contains(event.surfaceId)) return;
     emit(
       EtnaConversationState.surfaces(
-        surfaceIds: [...state.activeSurfaceIds, event.surfaceId],
-        text: _text.toString(),
+        turns: _updateLastTurn(
+          (turn) =>
+              turn.copyWith(surfaceIds: [...turn.surfaceIds, event.surfaceId]),
+        ),
       ),
     );
   }
@@ -161,11 +203,15 @@ class ConversationBloc
     Emitter<EtnaConversationState> emit,
   ) {
     emit(
-      EtnaConversationState.surfaces(
-        surfaceIds: state.activeSurfaceIds
-            .where((id) => id != event.surfaceId)
-            .toList(),
-        text: _text.toString(),
+      state.copyWith(
+        turns: [
+          for (final turn in state.turns)
+            turn.copyWith(
+              surfaceIds: turn.surfaceIds
+                  .where((id) => id != event.surfaceId)
+                  .toList(),
+            ),
+        ],
       ),
     );
   }
@@ -174,19 +220,25 @@ class ConversationBloc
     TextReceived event,
     Emitter<EtnaConversationState> emit,
   ) {
-    _text.write(event.text);
-    final text = _text.toString();
+    // Il testo in chiaro arriva a chunk: va concatenato, non sostituito.
     emit(
-      state.isThinking
-          ? EtnaConversationState.thinking(
-              surfaceIds: state.activeSurfaceIds,
-              text: text,
-            )
-          : EtnaConversationState.surfaces(
-              surfaceIds: state.activeSurfaceIds,
-              text: text,
-            ),
+      state.copyWith(
+        turns: _updateLastTurn(
+          (turn) => turn.copyWith(text: turn.text + event.text),
+        ),
+      ),
     );
+  }
+
+  void _onReplyCompleted(
+    ReplyCompleted event,
+    Emitter<EtnaConversationState> emit,
+  ) {
+    // Una risposta di solo testo non compone surface: senza questo lo
+    // spinner resterebbe acceso.
+    if (state.isThinking) {
+      emit(EtnaConversationState.surfaces(turns: state.turns));
+    }
   }
 
   void _onFailed(
@@ -194,16 +246,21 @@ class ConversationBloc
     Emitter<EtnaConversationState> emit,
   ) {
     emit(
-      EtnaConversationState.error(
-        message: event.message,
-        surfaceIds: state.activeSurfaceIds,
-      ),
+      EtnaConversationState.error(message: event.message, turns: state.turns),
     );
+  }
+
+  /// I giri della chat, con l'ultimo aggiornato da [update].
+  List<ChatTurn> _updateLastTurn(ChatTurn Function(ChatTurn turn) update) {
+    final turns = [...state.turns];
+    final last = turns.isEmpty ? const ChatTurn() : turns.removeLast();
+    return [...turns, update(last)];
   }
 
   @override
   Future<void> close() {
     _subscription.cancel();
+    agent.conversation.state.removeListener(_onGenUiState);
     return super.close();
   }
 }
