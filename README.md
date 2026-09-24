@@ -275,6 +275,26 @@ l'inizializzazione di App Check per isolare il problema. **Non è una via
 d'uscita**: il server di Firebase AI Logic rifiuta comunque la richiesta.
 Serve solo a capire *dove* si rompe, mai in produzione.
 
+### Cosa risponde davvero il modello
+
+In debug la risposta grezza di Gemini finisce in console, round per round: le
+tool call con i loro argomenti e il testo completo, blocchi JSON A2UI compresi.
+Serve a confrontarla con quello che la chat mostra: se una card non compare,
+lì si vede se il modello non l'ha mandata o se l'ha mandata fuori schema.
+
+````text
+[LLM] round 1 (storico: 1 messaggi)
+[LLM] tool searchEarthquakes {"daysBack":7,"minMagnitude":3.0}
+[LLM] round 2 (storico: 3 messaggi)
+[LLM] testo del round 2:
+La scossa più forte è stata a Zafferana Etnea.
+```json
+{"version":"v0.9","createSurface":{...}}
+```
+````
+
+In una build di release è spento; si accende con `--dart-define=LOG_LLM=true`.
+
 ### Il modello
 
 Default: **`gemini-3.5-flash`** — stabile da maggio 2026, garantito fino ad

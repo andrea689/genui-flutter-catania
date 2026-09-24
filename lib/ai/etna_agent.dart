@@ -6,6 +6,7 @@ import '../data/ingv_repository.dart';
 import 'etna_tools.dart';
 import 'firebase_llm_gateway.dart';
 import 'llm_gateway.dart';
+import 'logging_llm_gateway.dart';
 import 'tool_loop.dart';
 
 /// Il modello Gemini usato dalla demo.
@@ -67,9 +68,12 @@ class EtnaAgent {
   /// Costruisce l'agente sopra Firebase AI Logic.
   factory EtnaAgent.firebase({IngvRepository? repository, FirebaseAI? ai}) {
     final catalog = EtnaCatalog.asCatalog();
+    final gateway = buildFirebaseGateway(catalog: catalog, ai: ai);
     return EtnaAgent.custom(
       catalog: catalog,
-      gateway: buildFirebaseGateway(catalog: catalog, ai: ai),
+      // In debug la risposta del modello finisce in console, per confrontarla
+      // con quello che la UI mostra.
+      gateway: kLogLlm ? LoggingLlmGateway(gateway) : gateway,
       repository: repository ?? IngvRepository(),
     );
   }
