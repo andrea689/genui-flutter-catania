@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GenUI in Flutter — Flutter Catania, 17 ottobre 2026</title>
+  <meta name="author" content="Andrea Valenzano">
+  <meta name="description" content="L'AI sa la risposta, ma te la sa solo scrivere. Generative UI in Flutter con il package genui e il protocollo A2UI.">
+
+  <!-- reveal.js 5.2.1 VENDORIZZATO: nessuna CDN, il deck parte offline da file:// e da HTTP -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230E0E13'/%3E%3Cpath d='M4 26 L16 7 L28 26 Z' fill='%23FF4A21'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="vendor/reveal.js/dist/reset.css">
+  <link rel="stylesheet" href="vendor/reveal.js/dist/reveal.css">
+  <link rel="stylesheet" href="vendor/reveal.js/plugin/highlight/monokai.css">
+  <!-- tema del talk: sostituisce integralmente dist/theme/* (non vendorizzato) -->
+  <link rel="stylesheet" href="css/theme-etna.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- Durata: circa 40 minuti, più le domande (slot da 45).
+     Atto 0 6:30 · Atto 1 5:45 · Atto 2 7:30 · Atto 3 13:40 ·
+     Atto 4 3:40 · Chiusura 2:30. -->
+
+<!-- ====================================================================== -->
+<!-- ATTO 0 — AGGANCIO (6:30)                                               -->
+<!-- ====================================================================== -->
+
+<!-- ---------- 1 ---------- -->
+<section id="s01" data-slide="1">
+  <div class="wrap center cover">
+    <div class="eyebrow">Flutter Catania &middot; 17 ottobre 2026</div>
+    <h1>L&rsquo;AI sa la risposta.<br>Ma te la sa solo <span class="hl-lava">scrivere</span>.</h1>
+    <div class="sub">Generative UI in Flutter con <code>genui</code> e il protocollo A2UI</div>
+    <div class="rule"></div>
+    <div class="who">
+      <b>Andrea Valenzano</b>
+      <span class="muted">Senior Mobile Dev @ Volumio srl</span>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- 2 — IL PROBLEMA (confronto visivo reale) ---------- -->
+<section id="s02" data-slide="2">
+  <div class="actbar">Atto 0 &middot; <b>Il problema</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Stessi dati</span>Chiedi all&rsquo;AI di una scossa sull&rsquo;Etna</h2>
+    <div class="fill">
+      <div class="grid g2" style="align-items:start">
+
+        <!-- SINISTRA: la risposta testuale -->
+        <div>
+          <div class="chat-head">Quello che ricevi oggi</div>
+          <div class="chat-bubble">
+            Il <b>14 ottobre 2026 alle 04:12 UTC</b> l&rsquo;INGV ha registrato un
+            evento di <b>magnitudo 3.4</b> nell&rsquo;area sommitale dell&rsquo;Etna,
+            a <b>2.1 km</b> di profondit&agrave;, con epicentro <b>1.8 km a
+            nord-est</b> del Cratere di Bocca Nuova, nel comune di Castiglione di
+            Sicilia. Nelle sei ore precedenti tre scosse minori, tra magnitudo
+            1.4 e 2.0. Nessun danno a persone o cose.
+          </div>
+          <div class="caption">Un muro di prosa. Per capire <em>dov&rsquo;&egrave;</em>
+          devi aprire un&rsquo;altra app.</div>
+        </div>
+
+        <!-- DESTRA: la stessa informazione come card -->
+        <div>
+          <div class="card-head">Quello che potresti ricevere</div>
+          <div class="quakecard">
+            <svg class="qmap" viewBox="0 0 560 132" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Mappa schematica dell'Etna con l'epicentro">
+              <defs>
+                <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#121B26"/><stop offset="100%" stop-color="#0B1119"/>
+                </linearGradient>
+                <radialGradient id="coneG" cx="42%" cy="48%" r="62%">
+                  <stop offset="0%" stop-color="#3E2C22"/><stop offset="100%" stop-color="#191921"/>
+                </radialGradient>
+              </defs>
+              <rect width="560" height="132" fill="url(#seaG)"/>
+              <!-- terra (schematica, non cartografica) -->
+              <path d="M0,0 L392,0 L444,34 L436,86 L486,132 L0,132 Z" fill="url(#coneG)"/>
+              <!-- costa ionica -->
+              <path d="M392,0 L444,34 L436,86 L486,132" fill="none" stroke="#2E5A78" stroke-width="3"/>
+              <!-- curve di livello attorno alla sommit&agrave; -->
+              <g fill="none" stroke="#54402F" stroke-width="2">
+                <ellipse cx="228" cy="60" rx="176" ry="54"/>
+                <ellipse cx="228" cy="60" rx="132" ry="40"/>
+                <ellipse cx="228" cy="60" rx="88"  ry="26"/>
+                <ellipse cx="228" cy="60" rx="44"  ry="13"/>
+              </g>
+              <!-- reticolo -->
+              <g stroke="#242A36" stroke-width="1">
+                <line x1="140" y1="0" x2="140" y2="132"/><line x1="300" y1="0" x2="300" y2="132"/>
+                <line x1="460" y1="0" x2="460" y2="132"/>
+                <line x1="0" y1="40" x2="560" y2="40"/><line x1="0" y1="92" x2="560" y2="92"/>
+              </g>
+              <!-- epicentro -->
+              <g>
+                <circle cx="252" cy="52" r="30" fill="#FF4A21" opacity=".16"/>
+                <circle cx="252" cy="52" r="18" fill="#FF4A21" opacity=".32"/>
+                <circle cx="252" cy="52" r="8.5" fill="#FF4A21" stroke="#fff" stroke-width="2.5"/>
+              </g>
+              <!-- etichette -->
+              <text x="252" y="102" fill="#E6DFD3" font-size="15" font-weight="700" font-family="sans-serif" text-anchor="middle">Etna &middot; area sommitale</text>
+              <text x="534" y="124" fill="#5E86A4" font-size="14" font-family="sans-serif" text-anchor="end">Mar Ionio</text>
+              <!-- scala -->
+              <g><line x1="26" y1="118" x2="96" y2="118" stroke="#E6DFD3" stroke-width="3"/>
+                 <text x="26" y="110" fill="#E6DFD3" font-size="13" font-family="sans-serif">5 km</text></g>
+            </svg>
+            <div class="qbody">
+              <div class="qrow">
+                <div class="mag">3.4</div>
+                <div>
+                  <div class="qwhere">Castiglione di Sicilia (CT)</div>
+                  <div class="qwhen">14 ott 2026 &middot; 04:12 UTC &middot; INGV</div>
+                </div>
+              </div>
+              <div class="qstats">
+                <div>Profondit&agrave;<span>2.1 km</span></div>
+                <div>Distanza<span>1.8 km NE</span></div>
+                <div>Precedenti 6h<span>3 eventi</span></div>
+              </div>
+              <div class="qcta">Vedi i 3 eventi precedenti &rarr;</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="footline lava">Stessi identici dati. Stesso modello. Stessa API.
+      <span class="hl-ocra">Cambia solo chi decide la forma della risposta.</span></div>
+  </div>
+</section>
+
+<!-- ---------- 3 — DEMO: QUELLO CHE RICEVI OGGI ---------- -->
+<section id="s03" data-slide="3" class="live" data-background-color="#170A06">
+  <div class="wrap center">
+    <div class="livebadge"><span class="dot"></span> Demo</div>
+    <h2>Quello che ricevi oggi</h2>
+    <p class="stage">Dati INGV veri, ma il modello risponde <b>solo a parole</b>.</p>
+    <div class="todo">
+      <b>&#9654;</b> menu Risposte &rarr; <b>Solo testo</b><br>
+      &gt; <b>dimmi della scossa pi&ugrave; forte di questa settimana</b><br>
+      <span style="opacity:.75">attesa: tool call &rarr; INGV &rarr; un muro di prosa, come nella slide 2</span>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<!-- ATTO 1 — IL PERCH&Eacute; (5:45)                                       -->
+<!-- ====================================================================== -->
+
+<!-- ---------- 4 ---------- -->
+<section id="s04" data-slide="4">
+  <div class="actbar">Atto 1 &middot; <b>Il perch&eacute;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il panorama</span>Tre modi di mettere insieme UI e AI</h2>
+    <div class="fill">
+      <div class="grid g3">
+        <div class="card">
+          <span class="tag t-neu">1</span>
+          <h3>Chat pura</h3>
+          <p class="muted" style="font-size:.86em">Una sola UI possibile:
+          la bolla di testo. Tutto diventa prosa.</p>
+          <p class="mono" style="font-size:.72em;color:var(--ash)">markdown &middot; liste
+          &middot; tabelle ASCII</p>
+        </div>
+        <div class="card">
+          <span class="tag t-neu">2</span>
+          <h3>UI generativa, catalogo base</h3>
+          <p class="muted" style="font-size:.86em">L&rsquo;AI sceglie <b>anche la
+          forma</b>, con i mattoncini generici di <code>genui</code>.</p>
+          <p class="mono" style="font-size:.72em;color:var(--ash)">Text &middot; Card
+          &middot; Column &middot; Button</p>
+        </div>
+        <div class="card lava">
+          <span class="tag t-hot">3 &middot; stasera</span>
+          <h3>UI generativa custom</h3>
+          <p style="font-size:.86em">Catalogo <b>arricchito</b> con i tuoi widget.
+          Componenti pensati per i tuoi dati.</p>
+          <p class="mono" style="font-size:.72em;color:var(--ocra)">EventCard &middot; MapCard
+          &middot; TimelineChart</p>
+        </div>
+      </div>
+    </div>
+    <div class="footline">Dal secondo in poi l&rsquo;AI sceglie <b>anche la forma</b>.
+      <span class="hl-ocra">Il terzo &egrave; quello che costruiamo stasera.</span></div>
+  </div>
+</section>
+
+<!-- ---------- 5 ---------- -->
+<section id="s05" data-slide="5">
+  <div class="actbar">Atto 1 &middot; <b>Il perch&eacute;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Definizione</span>Che cos&rsquo;&egrave;, in una riga</h2>
+    <div class="fill">
+      <p class="lead xl">L&rsquo;agente sceglie <span class="hl-lava">anche la
+        presentazione</span>, non solo il contenuto.</p>
+      <div class="grid g2" style="margin-top:34px">
+        <div class="card">
+          <span class="tag t-neu">LLM &ldquo;normale&rdquo;</span>
+          <p style="font-size:.92em">Decide <b>che cosa</b> dire.</p>
+          <p class="mono" style="font-size:.78em;color:var(--ash)">risposta : String</p>
+        </div>
+        <div class="card ocra">
+          <span class="tag t-hot">Agente GenUI</span>
+          <p style="font-size:.92em">Decide anche <b>come mostrarlo</b>.</p>
+          <p class="mono" style="font-size:.78em;color:var(--ocra)">risposta : albero di widget</p>
+        </div>
+      </div>
+    </div>
+    <div class="footline lava">La risposta non &egrave; una stringa.
+      &Egrave; una <b>descrizione di interfaccia</b> che il tuo client sa rendere.</div>
+  </div>
+</section>
+
+<!-- ---------- 6 — LA SLIDE PI&Ugrave; IMPORTANTE ---------- -->
+<section id="s06" data-slide="6" data-background-color="#0A0A10">
+  <div class="actbar">Atto 1 &middot; <b>Il perch&eacute;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">&#9888; Se vi ricordate una sola slide, questa</span>Mettiamo subito a posto un equivoco</h2>
+    <div class="fill">
+      <div class="nosi">
+        <div class="no">
+          <div class="mark">&#10007;</div>
+          <div class="claim">L&rsquo;AI genera codice Dart a&nbsp;runtime</div>
+          <!-- SYNC: nessuna sostituzione — pseudo-codice volutamente FINTO, illustra ci&ograve; che NON accade. Non sincronizzare con la demo. -->
+          <div class="snippet"><span class="c">// non succede. mai.</span>
+<span class="k">final</span> src = <span class="k">await</span> ai.generate();
+<span class="k">final</span> w   = <span class="t">eval</span>(src);
+runApp(w); <span class="c">// ?!</span></div>
+          <p class="caption" style="color:var(--text-2);font-size:.62em">Niente <code>eval</code>.
+          Niente compilatore a bordo. Non esiste in Dart, e non lo vuoi.</p>
+        </div>
+        <div class="si">
+          <div class="mark">&#10003;</div>
+          <div class="claim">L&rsquo;AI compone widget da un catalogo che scrivi tu</div>
+          <!-- SYNCED da test/bloc/conversation_bloc_test.dart (_eventCardScript, righe 62-74).
+               ATTENZIONE: è l'A2UI dei test, NON una cattura reale dello stream di Gemini.
+               Per una cattura vera: in debug LoggingLlmGateway stampa in console la
+               risposta grezza del modello. -->
+          <div class="snippet"><span class="c">// A2UI vero, dai test della demo</span>
+{<span class="t">"version"</span>:<span class="s">"v0.9"</span>,<span class="t">"updateComponents"</span>:{
+ <span class="t">"surfaceId"</span>:<span class="s">"s1"</span>,<span class="t">"components"</span>:[{
+  <span class="t">"id"</span>:<span class="s">"root"</span>,<span class="t">"component"</span>:<span class="s">"EventCard"</span>,
+  <span class="t">"event"</span>:{&hellip;,<span class="t">"magnitude"</span>:<span class="s">4.3</span>,&hellip;}}]}}</div>
+          <p class="caption" style="color:var(--text-2);font-size:.62em">&Egrave; <b>dati</b>, non codice.
+          <code>EventCard</code> esiste perch&eacute; l&rsquo;hai scritta tu e
+          l&rsquo;hai messa nel catalogo.</p>
+        </div>
+      </div>
+      <div class="bigclaim">Il catalogo &egrave; il <span class="u">vocabolario</span>
+        che concedi al modello.<br>Ed &egrave; anche, nello stesso momento,
+        la sua <span class="u">sandbox</span>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- 7 ---------- -->
+<section id="s07" data-slide="7">
+  <div class="actbar">Atto 1 &middot; <b>Il perch&eacute;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il protocollo</span>A2UI &mdash; il formato che il modello parla</h2>
+    <div class="fill">
+      <div class="grid g2-wide-left">
+        <div>
+          <ul>
+            <li><b>Protocollo aperto</b>, non una libreria: descrive <em>come si
+              descrive</em> una UI, non come la disegni.</li>
+            <li>Versione <b>v0.9</b>, portato avanti da Google.
+              <span class="mono muted">a2ui.org</span></li>
+            <li><b>Renderer</b>: Flutter (<code>genui</code>), Angular.
+              React in arrivo, SwiftUI e Jetpack Compose in roadmap.</li>
+          </ul>
+        </div>
+        <div class="card ocra">
+          <span class="tag t-hot">Perch&eacute; JSON</span>
+          <p style="font-size:.86em"><b>Sicuro</b>: sono dati, non c&rsquo;&egrave;
+          niente da eseguire.</p>
+          <p style="font-size:.86em;margin-top:8px"><b>Veloce</b>: gli LLM lo
+          scrivono bene, i client lo leggono subito.</p>
+          <p style="font-size:.86em;margin-top:8px"><b>Ovunque</b>: lo legge
+          qualunque linguaggio. Il tuo <b>catalogo</b> resta l&rsquo;unica cosa
+          specifica della piattaforma.</p>
+        </div>
+      </div>
+      <div class="flow" style="margin-top:26px;justify-content:center">
+        <div class="step">Modello</div><div class="arr">&rarr;</div>
+        <div class="step"><b class="hl-ocra">A2UI</b> (JSON in streaming)</div><div class="arr">&rarr;</div>
+        <div class="step"><code>genui</code></div><div class="arr">&rarr;</div>
+        <div class="step">Widget Flutter</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- 8 ---------- -->
+<section id="s08" data-slide="8">
+  <div class="actbar">Atto 1 &middot; <b>Il perch&eacute;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Onest&agrave; intellettuale</span>Stato dell&rsquo;arte, senza entusiasmo</h2>
+    <div class="fill">
+      <div class="grid g2-wide-left">
+        <table>
+          <tbody>
+            <tr><th>Package</th><td><code>genui</code> &mdash;
+              <span class="muted">non pi&ugrave;</span>
+              <span class="mono muted" style="text-decoration:line-through">flutter_genui</span></td></tr>
+            <tr><th>Versione</th><td><code>0.10.3</code> &nbsp;<span class="pill hot">alpha</span>
+              <span class="muted">&middot; ultima 0.10.4</span></td></tr>
+            <tr><th>Riscrittura</th><td>maggio 2026, sopra A2UI v0.9</td></tr>
+            <tr><th>In arrivo</th><td>spezzato in <code>a2ui_core</code>,
+              <code>a2ui_agent</code>, <code>a2ui_flutter</code></td></tr>
+            <tr><th>Piattaforme</th><td>Android &middot; iOS &middot; macOS &middot; <b>web</b></td></tr>
+          </tbody>
+        </table>
+        <div class="card lava">
+          <span class="tag t-no">Attenzione</span>
+          <p style="font-size:.88em"><code>ContentGenerator</code> <b>non esiste
+          pi&ugrave;</b>: met&agrave; dei tutorial che trovate online &egrave; gi&agrave;
+          obsoleta.</p>
+          <p style="font-size:.88em;margin-top:12px"><b>Pinnate la versione.</b>
+          In alpha un minor pu&ograve; cambiarvi l&rsquo;API sotto i piedi.
+          E il prossimo cambio di nome &egrave; gi&agrave; annunciato.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footline">Dati verificati il <b>17 ottobre 2026</b>.
+      <span class="hl-ocra">Ricontrollateli: a questo ritmo invecchiano in settimane.</span></div>
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<!-- ATTO 2 — ARCHITETTURA (7:30)                                           -->
+<!-- ====================================================================== -->
+
+<!-- ---------- 9 — I TRE LAYER (SVG inline) ---------- -->
+<section id="s09" data-slide="9">
+  <div class="actbar">Atto 2 &middot; <b>Architettura</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Come &egrave; fatto dentro</span>Tre layer, uno sopra l&rsquo;altro</h2>
+    <div class="fill">
+      <svg class="diagram" viewBox="0 0 1000 318" role="img"
+           aria-label="Diagramma dei tre layer di genui: Engine (SurfaceController), Transport (A2uiTransportAdapter), Facade (Conversation)">
+        <defs>
+          <marker id="m9L" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="4" markerHeight="4" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L10,5 L0,10 z" fill="#FF4A21"/>
+          </marker>
+          <marker id="m9O" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="4" markerHeight="4" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L10,5 L0,10 z" fill="#F2B33D"/>
+          </marker>
+        </defs>
+
+        <!-- kicker sopra i box -->
+        <text class="d-kick" x="155" y="22" text-anchor="middle">1 &middot; ENGINE</text>
+        <text class="d-kick" x="500" y="22" text-anchor="middle">2 &middot; TRANSPORT</text>
+        <text class="d-kick" x="845" y="22" text-anchor="middle">3 &middot; FACADE</text>
+
+        <!-- layer -->
+        <rect class="d-box-l" x="5"   y="36" width="300" height="150" rx="12"/>
+        <rect class="d-box"   x="350" y="36" width="300" height="150" rx="12"/>
+        <rect class="d-box-o" x="695" y="36" width="300" height="150" rx="12"/>
+
+        <text class="d-api"  x="155" y="78"  text-anchor="middle">SurfaceController</text>
+        <text class="d-note" x="155" y="114" text-anchor="middle">tiene lo stato delle</text>
+        <text class="d-note" x="155" y="140" text-anchor="middle">surface e compone i</text>
+        <text class="d-note" x="155" y="166" text-anchor="middle">widget dal Catalog</text>
+
+        <text class="d-api"  x="500" y="78"  text-anchor="middle">A2uiTransportAdapter</text>
+        <text class="d-note" x="500" y="114" text-anchor="middle">parla col modello:</text>
+        <text class="d-note" x="500" y="140" text-anchor="middle">manda il prompt,</text>
+        <text class="d-note" x="500" y="166" text-anchor="middle">riceve i chunk A2UI</text>
+
+        <text class="d-api"  x="845" y="78"  text-anchor="middle">Conversation</text>
+        <text class="d-note" x="845" y="114" text-anchor="middle">l&rsquo;unica API che tocchi</text>
+        <text class="d-note" x="845" y="140" text-anchor="middle">dalla UI: sendRequest(),</text>
+        <text class="d-note" x="845" y="166" text-anchor="middle">events, state</text>
+
+        <!-- frecce fra i layer -->
+        <line class="d-arrow" x1="310" y1="111" x2="342" y2="111" marker-end="url(#m9L)"/>
+        <line class="d-arrow" x1="655" y1="111" x2="687" y2="111" marker-end="url(#m9L)"/>
+
+        <!-- connettori verso ci&ograve; che si aggancia -->
+        <line class="d-arrow-d" x1="155" y1="232" x2="155" y2="192" marker-end="url(#m9O)"/>
+        <line class="d-arrow-d" x1="500" y1="232" x2="500" y2="192" marker-end="url(#m9O)"/>
+        <line class="d-arrow-d" x1="845" y1="232" x2="845" y2="192" marker-end="url(#m9O)"/>
+
+        <rect class="d-box" x="5"   y="234" width="300" height="80" rx="12" opacity=".75"/>
+        <rect class="d-box" x="350" y="234" width="300" height="80" rx="12" opacity=".75"/>
+        <rect class="d-box" x="695" y="234" width="300" height="80" rx="12" opacity=".75"/>
+
+        <text class="d-lbl"  x="155" y="268" text-anchor="middle">Catalog + CatalogItem</text>
+        <text class="d-note" x="155" y="296" text-anchor="middle">lo scrivi tu</text>
+        <text class="d-lbl"  x="500" y="268" text-anchor="middle">Gemini</text>
+        <text class="d-note" x="500" y="296" text-anchor="middle">via Firebase AI Logic</text>
+        <text class="d-lbl"  x="845" y="268" text-anchor="middle">ConversationBloc</text>
+        <text class="d-note" x="845" y="296" text-anchor="middle">la tua app</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- 10 ---------- -->
+<section id="s10" data-slide="10">
+  <div class="actbar">Atto 2 &middot; <b>Architettura</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il concetto centrale</span>Che cos&rsquo;&egrave; una <em>surface</em></h2>
+    <div class="fill">
+      <div class="grid g2-wide-right">
+        <div>
+          <ul>
+            <li>Una <b>superficie di rendering</b> con un id.</li>
+            <li>Il modello dice: &laquo;sulla surface <code>main</code> metti
+              <em>questo</em> albero&raquo;.</li>
+            <li>Una conversazione pu&ograve; averne <b>pi&ugrave; di una</b>: la
+              risposta principale, un pannello di dettaglio, una barra di azioni.</li>
+            <li>Gli eventi (il tap su una card) <b>risalgono</b> dalla surface
+              e diventano <b>un nuovo turno</b>.</li>
+          </ul>
+        </div>
+        <div>
+          <!-- SYNCED da lib/ui/chat_page.dart (righe 104-112, senza il _SurfaceFrame
+               che fa da cornice) e lib/catalog/map_card/map_card_item.dart (righe 33-40) -->
+          <pre class="small"><span class="codecap">surface</span><code class="language-dart" data-trim data-line-numbers="2-7|10-18">
+// chat_page.dart — una surface per risposta
+for (final surfaceId in turn.surfaceIds)
+  Surface(
+    key: ValueKey(surfaceId),
+    surfaceContext: bloc.agent.controller
+        .contextFor(surfaceId),
+  ),
+
+// map_card_item.dart — il tap su un epicentro
+onEventTap: (event) => itemContext.dispatchEvent(
+  UserActionEvent(
+    name: 'map_epicenter_tapped',
+    surfaceId: itemContext.surfaceId,
+    sourceComponentId: itemContext.id,
+    context: {'eventId': event.eventId,
+              'place': event.place},
+  ),
+),
+          </code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- 11 ---------- -->
+<section id="s11" data-slide="11">
+  <div class="actbar">Atto 2 &middot; <b>Architettura</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il pezzo che scrivi tu</span><code>Catalog</code> e <code>CatalogItem</code></h2>
+    <div class="fill">
+      <p class="lead">Il <span class="hl-lava">vocabolario</span> che il modello ha il
+        permesso di usare.</p>
+      <!-- SYNCED da lib/catalog/etna_catalog.dart (righe 13-34) -->
+      <pre class="small" style="margin-top:18px"><span class="codecap">catalog</span><code class="language-dart" data-trim data-line-numbers="3-8|9-10">
+abstract final class EtnaCatalog {
+  static const String catalogId = 'flutter-catania.dev:etna';
+  static final List&lt;CatalogItem&gt; items = [
+    eventCardItem,
+    mapCardItem,
+    timelineChartItem,
+    comparisonCardItem,
+  ];
+  static Catalog asCatalog() =&gt; BasicCatalogItems.asNoAssetCatalog().copyWith(
+    newItems: items, catalogId: catalogId, systemPromptFragments: [_rules]);
+}
+      </code></pre>
+    </div>
+    <div class="footline">Quattro <code>CatalogItem</code> sopra i <em>basic</em>.
+      <span class="hl-ocra">Il modello non pu&ograve; nominare nient&rsquo;altro.</span></div>
+  </div>
+</section>
+
+<!-- ---------- 12 ---------- -->
+<section id="s12" data-slide="12">
+  <div class="actbar">Atto 2 &middot; <b>Architettura</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il contratto</span>Lo schema, con <code>json_schema_builder</code></h2>
+    <div class="fill">
+      <!-- SYNCED da lib/catalog/seismic_event_schema.dart (righe 12-42) -->
+      <pre><span class="codecap">schema</span><code class="language-dart" data-trim data-line-numbers="3-7|8|9-10">
+final Schema seismicEventSchema = S.object(
+  properties: {
+    'time': S.string(description: 'Istante dell\'evento in formato '
+        'ISO 8601 UTC, es. 2026-09-18T03:14:00Z.'),
+    'magnitude': S.number(description: 'Magnitudo, es. 3.4.'),
+    'place': S.string(description: 'Località di riferimento, es. '
+        '"1 km N Ragalna (CT)".'),
+  },  // ... eventId, magnitudeType, latitude, longitude, depthKm
+  required: ['eventId', 'time', 'magnitude', 'magnitudeType', 'place',
+             'latitude', 'longitude', 'depthKm'],
+);
+      </code></pre>
+    </div>
+    <div class="footline lava">Lo schema non &egrave; documentazione: &egrave;
+      <b>l&rsquo;unica cosa che il modello vede</b> del tuo widget.
+      <span class="hl-ocra">Se non &egrave; qui dentro, non pu&ograve; inventarlo.</span></div>
+  </div>
+</section>
+
+<!-- ---------- 13 — IL GIRO COMPLETO (sequence diagram SVG) ---------- -->
+<section id="s13" data-slide="13">
+  <div class="actbar">Atto 2 &middot; <b>Architettura</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Tutto insieme</span>Il giro completo, dal tap al widget</h2>
+    <div class="fill">
+      <svg class="diagram" viewBox="0 0 1000 392" role="img"
+           aria-label="Sequence diagram: utente, ConversationBloc, A2uiTransportAdapter, Gemini, INGV FDSN">
+        <defs>
+          <marker id="m14L" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="4" markerHeight="4" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L10,5 L0,10 z" fill="#FF4A21"/>
+          </marker>
+          <marker id="m14O" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="4" markerHeight="4" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L10,5 L0,10 z" fill="#F2B33D"/>
+          </marker>
+        </defs>
+
+        <!-- intestazioni delle lifeline -->
+        <rect class="d-box-o" x="2"   y="2" width="188" height="76" rx="10"/>
+        <rect class="d-box"   x="204" y="2" width="188" height="76" rx="10"/>
+        <rect class="d-box-l" x="406" y="2" width="188" height="76" rx="10"/>
+        <rect class="d-box"   x="608" y="2" width="188" height="76" rx="10"/>
+        <rect class="d-box"   x="810" y="2" width="188" height="76" rx="10"/>
+
+        <text class="d-title" x="96"  y="34" text-anchor="middle">Utente</text>
+        <text class="d-note"  x="96"  y="60" text-anchor="middle">tocca e digita</text>
+
+        <text class="d-title" x="298" y="30" text-anchor="middle">App</text>
+        <text class="d-sub"   x="298" y="58" text-anchor="middle">ConversationBloc</text>
+
+        <text class="d-title" x="500" y="28" text-anchor="middle">Transport</text>
+        <text class="d-sub"   x="500" y="50" text-anchor="middle">A2uiTransport</text>
+        <text class="d-sub"   x="500" y="70" text-anchor="middle">Adapter</text>
+
+        <text class="d-title" x="702" y="30" text-anchor="middle">Gemini</text>
+        <text class="d-sub"   x="702" y="58" text-anchor="middle">Firebase AI</text>
+
+        <text class="d-title" x="904" y="30" text-anchor="middle">INGV FDSN</text>
+        <text class="d-sub"   x="904" y="58" text-anchor="middle">IngvRepository</text>
+
+        <!-- lifeline -->
+        <line class="d-life" x1="96"  y1="78" x2="96"  y2="390"/>
+        <line class="d-life" x1="298" y1="78" x2="298" y2="390"/>
+        <line class="d-life" x1="500" y1="78" x2="500" y2="390"/>
+        <line class="d-life" x1="702" y1="78" x2="702" y2="390"/>
+        <line class="d-life" x1="904" y1="78" x2="904" y2="390"/>
+
+        <!-- 1 -->
+        <text class="d-lbl" x="197" y="102" text-anchor="middle">&ldquo;cosa &egrave; successo?&rdquo;</text>
+        <line class="d-arrow" x1="96" y1="110" x2="294" y2="110" marker-end="url(#m14L)"/>
+        <!-- 2 -->
+        <text class="d-lbl" x="399" y="140" text-anchor="middle">onSend(message)</text>
+        <line class="d-arrow" x1="298" y1="148" x2="496" y2="148" marker-end="url(#m14L)"/>
+        <!-- 3 -->
+        <text class="d-lbl" x="601" y="178" text-anchor="middle">prompt + tool schema</text>
+        <line class="d-arrow" x1="500" y1="186" x2="698" y2="186" marker-end="url(#m14L)"/>
+        <!-- 4 -->
+        <text class="d-lbl" x="803" y="216" text-anchor="middle">searchEarthquakes()</text>
+        <line class="d-arrow" x1="702" y1="224" x2="900" y2="224" marker-end="url(#m14L)"/>
+        <!-- 5 -->
+        <text class="d-lbl" x="803" y="254" text-anchor="middle">GeoJSON: 47 eventi</text>
+        <line class="d-arrow-d" x1="904" y1="262" x2="706" y2="262" marker-end="url(#m14O)"/>
+        <!-- 6 -->
+        <text class="d-lbl" x="601" y="292" text-anchor="middle">chunk A2UI &rarr; addChunk()</text>
+        <line class="d-arrow-d" x1="702" y1="300" x2="504" y2="300" marker-end="url(#m14O)"/>
+        <!-- 7 -->
+        <text class="d-lbl" x="399" y="330" text-anchor="middle">surface aggiornata</text>
+        <line class="d-arrow-d" x1="500" y1="338" x2="302" y2="338" marker-end="url(#m14O)"/>
+        <!-- 8 -->
+        <text class="d-lbl" x="197" y="368" text-anchor="middle">MapCard + TimelineChart</text>
+        <line class="d-arrow" x1="298" y1="376" x2="100" y2="376" marker-end="url(#m14L)"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<!-- ATTO 3 — CODICE E DEMO (13:40)                                         -->
+<!-- ====================================================================== -->
+
+<!-- ---------- 14 ---------- -->
+<section id="s14" data-slide="14">
+  <div class="actbar">Atto 3 &middot; <b>Codice e demo</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">I dati veri</span>INGV FDSN &mdash; aperta, senza chiave</h2>
+    <div class="fill">
+      <div class="grid g2" style="align-items:start">
+        <div>
+          <!-- SYNCED da lib/data/ingv_repository.dart (righe 11-14 e 63-73) -->
+          <pre class="small"><span class="codecap">repository</span><code class="language-dart" data-trim data-line-numbers>
+// lib/data/ingv_repository.dart
+static const double minLatitude = 37.4;
+static const double maxLatitude = 37.9;
+static const double minLongitude = 14.7;
+static const double maxLongitude = 15.3;
+
+final uri = Uri.https(_host, _path, {
+  'starttime': _formatTime(startTime),
+  if (endTime != null)
+    'endtime': _formatTime(endTime),
+  'minmagnitude': minMagnitude.toString(),
+  'minlat': EtnaBounds.minLatitude.toString(),
+  'maxlat': EtnaBounds.maxLatitude.toString(),
+  'minlon': EtnaBounds.minLongitude.toString(),
+  'maxlon': EtnaBounds.maxLongitude.toString(),
+  'format': 'geojson',
+  'limit': limit.toString(),
+});
+          </code></pre>
+        </div>
+        <div>
+          <ul>
+            <li><b>API</b>: <span class="mono" style="font-size:.78em;color:var(--ocra)">webservices.ingv.it<br>/fdsnws/event/1/query</span></li>
+            <li>Nessuna API key. <b>Nessun proxy.</b></li>
+            <li><code>Access-Control-Allow-Origin: *</code> &rarr; funziona anche
+              dal browser.</li>
+            <li>Il bounding box &egrave; il riquadro dell&rsquo;Etna.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- 15 ---------- -->
+<section id="s15" data-slide="15">
+  <div class="actbar">Atto 3 &middot; <b>Codice e demo</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Function calling</span>Lo strumento che dai a Gemini</h2>
+    <div class="fill">
+      <!-- SYNCED da lib/ai/etna_tools.dart (righe 19-55) -->
+      <pre class="small"><span class="codecap">tool</span><code class="language-dart" data-trim data-line-numbers="1-5|6-9|13-14">
+static final FunctionDeclaration searchEarthquakes = FunctionDeclaration(
+  searchEarthquakesName,   // 'searchEarthquakes'
+  'Cerca i terremoti registrati dall\'INGV nell\'area dell\'Etna. '
+  'Usa questa funzione ogni volta che servono dati sismici reali: '
+  'non inventare mai magnitudo, date o località.',
+  parameters: {
+    'daysBack': Schema.integer(description: 'Quanti giorni indietro cercare a partire da oggi. '
+        'Es. 7 per "questa settimana", 30 per "questo mese".'),
+    // ... minMagnitude, limit, offsetDays
+  },
+  optionalParameters: ['minMagnitude', 'limit', 'offsetDays'],
+);
+// gli handler, nello stesso file, indicizzati per nome:
+Map&lt;String, ToolHandler&gt; get handlers =&gt; {searchEarthquakesName: _handleSearchEarthquakes};
+      </code></pre>
+    </div>
+    <div class="footline">Il modello non sa cos&rsquo;&egrave; l&rsquo;INGV.
+      <span class="hl-ocra">Sa che esiste uno strumento con quel nome e quella
+      descrizione</span>, e decide lui quando serve.</div>
+  </div>
+</section>
+
+<!-- ---------- 16 ---------- -->
+<section id="s16" data-slide="16">
+  <div class="actbar">Atto 3 &middot; <b>Codice e demo</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il widget</span>Anatomia di una card &mdash; e resta <em>pura</em></h2>
+    <div class="fill">
+      <!-- SYNCED da lib/catalog/event_card/event_card.dart (righe 12-21 e 225-230) -->
+      <pre class="small"><span class="codecap">event_card.dart</span><code class="language-dart" data-trim data-line-numbers="2-5|6-9|12-14">
+class EventCard extends StatelessWidget {
+  const EventCard({super.key, required this.event, this.onTap});
+  final SeismicEvent event;
+  /// Tap opzionale: in app lo collega l'adapter, nel previewer resta null.
+  final VoidCallback? onTap;
+  @override
+  Widget build(BuildContext context) {
+    /* ... */
+  }
+}
+
+@Preview(name: 'EventCard — scossa forte', group: 'Catalogo Etna',
+    size: Size(460, 220))
+Widget eventCardStrong() =&gt; EventCard(event: _strongQuake);
+      </code></pre>
+    </div>
+    <div class="footline lava">Il widget non sa nulla di AI, JSON o Firebase.
+      <span class="hl-ocra">&Egrave; un vincolo del previewer &mdash; ed &egrave;
+      comunque buon design.</span></div>
+  </div>
+</section>
+
+<!-- ---------- 17 — LIVE: VS CODE ---------- -->
+<section id="s17" data-slide="17" class="live" data-background-color="#170A06">
+  <div class="wrap center">
+    <div class="livebadge"><span class="dot"></span> Live &middot; VS Code</div>
+    <h2>Widget Preview</h2>
+    <p class="stage">Un solo pannello con <b>tutto il catalogo</b>: le quattro card,
+      in light, dark e casi limite, senza lanciare l&rsquo;app e senza Firebase.</p>
+    <div class="todo">
+      <b>&#9654;</b> apro il pannello Widget Preview<br>
+      <b>&#9654;</b> group: <b>'Catalogo Etna'</b> &rarr; 14 anteprime, 4 card<br>
+      <b>&#9654;</b> cambio <b>brightness</b> &rarr; light / dark a caldo<br>
+      <b>&#9654;</b> tocco un colore &rarr; hot reload nel pannello
+    </div>
+  </div>
+</section>
+
+<!-- ---------- 18 ---------- -->
+<section id="s18" data-slide="18">
+  <div class="actbar">Atto 3 &middot; <b>Codice e demo</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">L&rsquo;adapter</span>Da widget a <code>CatalogItem</code></h2>
+    <div class="fill">
+      <!-- SYNCED da lib/catalog/event_card/event_card_item.dart (righe 11-39) -->
+      <pre class="small"><span class="codecap">event_card_item.dart</span><code class="language-dart" data-trim data-line-numbers="2|3-6|7-12">
+final CatalogItem eventCardItem = CatalogItem(
+  name: 'EventCard',
+  dataSchema: S.object(
+    description: 'Il dettaglio di UNA singola scossa. Usala quando l\'utente '
+        'chiede di un evento specifico, per esempio "la scossa più forte".',
+    properties: {'event': seismicEventSchema}, required: ['event']),
+  widgetBuilder: (itemContext) {
+    final data = itemContext.data as Map&lt;String, Object?&gt;;
+    final event = parseSeismicEvent(data['event']! as Map&lt;String, Object?&gt;);
+    return EventCard(event: event, onTap: () =&gt; itemContext.dispatchEvent(
+        UserActionEvent(name: 'event_card_tapped',
+            surfaceId: itemContext.surfaceId, /* ... */)));
+  },
+);
+      </code></pre>
+      <div class="grid g3 tight" style="margin-top:22px">
+        <div class="card flat"><span class="pill">name</span>
+          <p class="caption">il nome che il modello pu&ograve; scrivere</p></div>
+        <div class="card flat"><span class="pill hot">dataSchema</span>
+          <p class="caption">il contratto: cosa pu&ograve; passare</p></div>
+        <div class="card flat"><span class="pill ok">widgetBuilder</span>
+          <p class="caption">la traduzione JSON &rarr; pixel</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- 19 ---------- -->
+<section id="s19" data-slide="19">
+  <div class="actbar">Atto 3 &middot; <b>Codice e demo</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">L&rsquo;ultimo pezzo</span>Il system prompt</h2>
+    <div class="fill">
+      <!-- SYNCED da lib/ai/response_mode.dart (righe 44-46), lib/ai/etna_agent.dart (riga 63)
+           e lib/catalog/etna_catalog.dart (righe 36-57) -->
+      <pre class="small"><span class="codecap">prompt</span><code class="language-dart" data-trim data-line-numbers="1-2|4-5|7-10">
+PromptBuilder.chat(catalog: catalog).systemPromptJoined() // response_mode.dart
+systemInstruction: Content.system(mode.systemPrompt),     // etna_agent.dart
+// lib/catalog/etna_catalog.dart — le TUE regole, iniettate nel prompt
+static const String _rules = '''
+Sei l'assistente sismico dell'Etna. Rispondi in italiano.
+SCELTA DELLA CARD — è la decisione più importante che prendi:
+- EventCard: una singola scossa in dettaglio ("la scossa più forte").
+- MapCard: DOVE sono avvenute le scosse, o il quadro di uno sciame.
+- TimelineChart: QUANDO sono avvenute, l'andamento nel tempo.
+- ComparisonCard: il paragone fra due periodi ("confronta con agosto").
+DATI:
+- Chiama sempre searchEarthquakes prima di parlare di scosse.
+- Non inventare MAI magnitudo, date, località o identificativi: ...
+''';
+      </code></pre>
+    </div>
+    <div class="footline">Il prompt <b>non descrive i widget</b>: quelli li legge
+      dallo schema. <span class="hl-ocra">Il prompt dice <em>quando</em> usarli.</span></div>
+  </div>
+</section>
+
+<!-- ---------- 20 — COSA CI ASPETTIAMO ---------- -->
+<section id="s20" data-slide="20">
+  <div class="actbar">Atto 3 &middot; <b>Codice e demo</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Cosa ci aspettiamo</span>Una sola app. Tre domande. Tre UI diverse.</h2>
+    <div class="fill">
+      <div class="grid g3">
+        <div class="card">
+          <span class="tag t-neu">Domanda 1</span>
+          <p class="mono" style="font-size:.80em;color:var(--text-2)">&ldquo;cosa &egrave; successo sull&rsquo;Etna questa settimana?&rdquo;</p>
+          <p style="margin-top:14px"><span class="arr hl-lava">&darr;</span></p>
+          <p><b class="hl-ocra">MapCard</b> + <b class="hl-ocra">TimelineChart</b></p>
+          <div class="caption">panoramica: dove e quando</div>
+        </div>
+        <div class="card">
+          <span class="tag t-neu">Domanda 2</span>
+          <p class="mono" style="font-size:.80em;color:var(--text-2)">&ldquo;dimmi della scossa pi&ugrave; forte&rdquo;</p>
+          <p style="margin-top:14px"><span class="arr hl-lava">&darr;</span></p>
+          <p><b class="hl-ocra">EventCard</b> dettagliata</p>
+          <div class="caption">zoom su un singolo evento</div>
+        </div>
+        <div class="card">
+          <span class="tag t-neu">Domanda 3</span>
+          <p class="mono" style="font-size:.80em;color:var(--text-2)">&ldquo;confronta con il mese scorso&rdquo;</p>
+          <p style="margin-top:14px"><span class="arr hl-lava">&darr;</span></p>
+          <p><b class="hl-ocra">ComparisonCard</b></p>
+          <div class="caption">due periodi affiancati</div>
+        </div>
+      </div>
+    </div>
+    <div class="footline">Tre presentazioni diverse dallo <b>stesso catalogo</b>.
+      <span class="hl-ocra">Zero schermate hardcoded.</span></div>
+  </div>
+</section>
+
+<!-- ---------- 21 — DEMO: CATALOGO BASE E CATALOGO ETNA ---------- -->
+<section id="s21" data-slide="21" class="live" data-background-color="#1C0A04">
+  <div class="wrap center">
+    <div class="livebadge"><span class="dot"></span> Demo</div>
+    <h2>Due cataloghi, stesse domande</h2>
+    <p class="stage">Prima con i mattoncini generici di <code>genui</code>, poi con
+      le card Etna.</p>
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<!-- ATTO 4 — LA REALTÀ (3:40)                                              -->
+<!-- ====================================================================== -->
+
+<!-- ---------- 22 ---------- -->
+<section id="s22" data-slide="22">
+  <div class="actbar">Atto 4 &middot; <b>La realt&agrave;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Senza sconti</span>Cosa funziona, e cosa fa male</h2>
+    <div class="fill">
+      <div class="grid g2">
+        <div class="card" style="border-color:var(--ok)">
+          <span class="tag t-yes">Funziona</span>
+          <ul>
+            <li><b>Densit&agrave;</b>: una card dice in un colpo quello che tre
+              paragrafi spiegano.</li>
+            <li><b>Interazione vera</b>: il tap rientra nella conversazione.</li>
+            <li><b>Widget normali</b>: Widget Preview, golden test e tema
+              funzionano come sempre.</li>
+          </ul>
+        </div>
+        <div class="card lava">
+          <span class="tag t-no">Fa male</span>
+          <ul>
+            <li><b>Latenza</b>: prima del primo chunk c&rsquo;&egrave; il
+              round-trip del tool. Lo streaming la maschera, non la toglie.</li>
+            <li><b>Non-determinismo</b>: stessa domanda, UI diversa. Gli utenti
+              lo notano.</li>
+            <li><b>Costo token</b>: gli schemi del catalogo viaggiano
+              <em>a ogni turno</em>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footline">Nessuna di queste &egrave; un bug da sistemare.
+      <span class="hl-ocra">Sono il prezzo del modello di interazione.</span></div>
+  </div>
+</section>
+
+<!-- ---------- 23 ---------- -->
+<section id="s23" data-slide="23">
+  <div class="actbar">Atto 4 &middot; <b>La realt&agrave;</b></div>
+  <div class="wrap">
+    <h2 class="stitle"><span class="kicker">Il consiglio pi&ugrave; utile</span>Quando <em>non</em> usarla</h2>
+    <div class="fill">
+      <div class="grid g2">
+        <div class="card lava">
+          <ul>
+            <li><b>Checkout e pagamenti.</b> Il layout non &egrave; un&rsquo;opinione.</li>
+            <li><b>Form critici</b>: dati sanitari, contratti, consensi.</li>
+            <li><b>Flussi regolamentati</b> o con accessibilit&agrave; certificata.</li>
+            <li>Qualunque schermata che deve essere <b>identica ogni volta</b>.</li>
+          </ul>
+        </div>
+        <div class="card ocra" style="display:flex;align-items:center">
+          <p class="lead" style="font-size:1.10em">Se il layout &egrave; un
+            <span class="hl-lava">requisito</span> e non un&rsquo;opinione,<br>
+            non &egrave; un caso da GenUI.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footline">Il posto giusto &egrave; l&rsquo;<b>esplorazione</b>:
+      dati, ricerca, diagnostica, supporto.
+      <span class="hl-ocra">Dove non sai in anticipo cosa serve mostrare.</span></div>
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<!-- CHIUSURA                                                               -->
+<!-- ====================================================================== -->
+
+<!-- ---------- 24 ---------- -->
+<section id="s24" data-slide="24">
+  <div class="wrap center" style="align-items:center;text-align:center">
+    <h1>Grazie!</h1>
+    <div class="qrs big" style="margin-top:36px">
+      <figure><svg class="qr-svg" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" shape-rendering="crispEdges"><path fill="#F5F1EA" d="M0 0h35v35H0z"/><path stroke="#0A0A0C" d="M1 1.5h7m2 0h2m1 0h2m2 0h6m1 0h1m2 0h7M1 2.5h1m5 0h1m2 0h1m3 0h5m3 0h1m4 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h2m2 0h7m3 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h2m2 0h1m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h4m3 0h1m2 0h1m2 0h3m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h1m3 0h5m3 0h1m5 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h1m2 0h2m1 0h2m2 0h1m2 0h1m1 0h2M1 9.5h1m1 0h5m2 0h1m3 0h3m1 0h1m8 0h5M3 10.5h1m2 0h1m2 0h1m10 0h3m1 0h1m2 0h2m1 0h2m1 0h1M1 11.5h5m1 0h6m3 0h2m1 0h1m1 0h3m1 0h2m2 0h1m1 0h2M1 12.5h2m1 0h3m8 0h2m5 0h1m2 0h1m3 0h4M2 13.5h1m3 0h4m2 0h1m6 0h1m3 0h4m2 0h2m1 0h1M5 14.5h2m1 0h2m1 0h2m2 0h3m3 0h1m2 0h1m1 0h2m4 0h2M2 15.5h2m1 0h1m1 0h1m4 0h1m1 0h2m2 0h3m2 0h1m2 0h2m2 0h3M1 16.5h1m1 0h2m5 0h2m2 0h1m2 0h1m1 0h4m3 0h2m3 0h1M1 17.5h2m1 0h1m2 0h1m1 0h2m1 0h1m4 0h2m1 0h1m2 0h4m1 0h2m3 0h1M1 18.5h2m5 0h2m1 0h1m2 0h1m3 0h5m1 0h1m2 0h2m1 0h4M2 19.5h1m1 0h1m2 0h1m1 0h1m2 0h1m1 0h3m1 0h1m2 0h2m2 0h2m1 0h2m1 0h2M1 20.5h2m1 0h1m6 0h3m2 0h1m1 0h6m4 0h4m1 0h1M1 21.5h3m3 0h1m1 0h1m1 0h3m3 0h1m2 0h1m2 0h1m1 0h2m2 0h2m1 0h2M1 22.5h3m1 0h2m1 0h1m1 0h1m1 0h2m1 0h2m2 0h1m2 0h1m1 0h2m1 0h1m2 0h1m2 0h1M1 23.5h1m1 0h1m2 0h5m1 0h1m1 0h4m3 0h1m3 0h2m1 0h1m1 0h3M1 24.5h1m1 0h1m1 0h2m3 0h3m1 0h1m1 0h1m5 0h6m1 0h3m1 0h1M1 25.5h1m4 0h3m1 0h1m1 0h1m2 0h4m4 0h1m1 0h5M9 26.5h1m3 0h3m3 0h2m3 0h2m3 0h1m1 0h1m1 0h1M1 27.5h7m2 0h4m1 0h2m2 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h2M1 28.5h1m5 0h1m1 0h1m4 0h1m2 0h1m3 0h2m1 0h2m3 0h4M1 29.5h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m2 0h2m2 0h1m1 0h6m1 0h1M1 30.5h1m1 0h3m1 0h1m1 0h2m1 0h3m1 0h2m2 0h2m2 0h3m2 0h5M1 31.5h1m1 0h3m1 0h1m1 0h1m2 0h2m5 0h1m1 0h1m1 0h1m3 0h2M1 32.5h1m5 0h1m2 0h6m1 0h1m4 0h3m1 0h1m2 0h3M1 33.5h7m1 0h2m2 0h1m1 0h1m1 0h4m2 0h4m1 0h1m3 0h1"/></svg><figcaption>Repo<span>github.com/andrea689</span></figcaption></figure>
+      <figure><svg class="qr-svg" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" shape-rendering="crispEdges"><path fill="#F5F1EA" d="M0 0h35v35H0z"/><path stroke="#0A0A0C" d="M1 1.5h7m3 0h4m2 0h6m1 0h1m2 0h7M1 2.5h1m5 0h1m4 0h1m1 0h5m3 0h2m3 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m1 0h2m1 0h1m2 0h3m1 0h2m4 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h2m2 0h1m1 0h3m3 0h1m1 0h1m3 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h2m5 0h1m1 0h2m2 0h1m1 0h1m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h1m3 0h1m1 0h3m1 0h1m1 0h2m4 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h1m1 0h3m1 0h2m2 0h1m2 0h2m1 0h1M1 9.5h1m1 0h5m2 0h1m2 0h4m1 0h1m2 0h1m3 0h1m1 0h5M1 10.5h1m1 0h1m2 0h1m3 0h1m2 0h1m3 0h1m2 0h5m2 0h2m1 0h2m1 0h1M2 11.5h1m1 0h2m1 0h4m5 0h2m1 0h1m1 0h2m2 0h2m2 0h1m1 0h1M5 12.5h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h1m4 0h4m3 0h4M3 13.5h2m1 0h6m1 0h1m5 0h2m2 0h1m1 0h2m2 0h2m2 0h1M3 14.5h3m2 0h1m1 0h1m2 0h1m1 0h3m3 0h2m1 0h1m2 0h1m2 0h1m1 0h2M3 15.5h1m3 0h2m2 0h5m4 0h1m2 0h1m2 0h3m1 0h3M1 16.5h2m1 0h3m2 0h4m4 0h1m2 0h3m1 0h4m2 0h2M1 17.5h1m2 0h2m1 0h1m1 0h1m1 0h3m1 0h1m2 0h1m1 0h1m5 0h1m1 0h2m3 0h1M2 18.5h1m1 0h2m4 0h1m2 0h2m3 0h4m1 0h2m2 0h2m1 0h2m1 0h1M3 19.5h1m3 0h1m1 0h2m2 0h1m2 0h3m2 0h1m1 0h1m1 0h2m1 0h2m1 0h2M3 20.5h2m7 0h2m1 0h1m1 0h6m3 0h1m1 0h5M1 21.5h4m1 0h3m1 0h2m1 0h3m1 0h1m5 0h1m1 0h2m2 0h2m1 0h1M1 22.5h2m2 0h2m2 0h2m1 0h1m2 0h2m2 0h1m4 0h1m1 0h2m2 0h2m1 0h1M1 23.5h1m1 0h1m3 0h1m1 0h1m4 0h6m1 0h2m9 0h1M1 24.5h1m1 0h3m2 0h1m4 0h4m2 0h4m3 0h1m3 0h2m1 0h1M1 25.5h1m2 0h1m1 0h3m1 0h1m2 0h1m1 0h2m1 0h3m3 0h6M9 26.5h1m1 0h1m1 0h2m2 0h1m1 0h3m1 0h1m1 0h1m3 0h1m1 0h3M1 27.5h7m2 0h8m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h2M1 28.5h1m5 0h1m1 0h1m1 0h1m1 0h2m1 0h1m3 0h6m3 0h3m1 0h1M1 29.5h1m1 0h3m1 0h1m1 0h5m5 0h2m2 0h1m1 0h6m1 0h2M1 30.5h1m1 0h3m1 0h1m1 0h2m5 0h3m1 0h1m5 0h1m2 0h2m1 0h2M1 31.5h1m1 0h3m1 0h1m1 0h2m2 0h2m3 0h1m2 0h2m1 0h1m2 0h2m2 0h1M1 32.5h1m5 0h1m3 0h3m3 0h1m1 0h1m2 0h2m5 0h3M1 33.5h7m1 0h1m4 0h2m2 0h1m6 0h1m1 0h2m1 0h1m1 0h1"/></svg><figcaption>Queste slide<span>andrea689.github.io</span></figcaption></figure>
+      <figure><svg class="qr-svg" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 31" shape-rendering="crispEdges"><path fill="#F5F1EA" d="M0 0h31v31H0z"/><path stroke="#0A0A0C" d="M1 1.5h7m1 0h1m3 0h4m2 0h3m1 0h7M1 2.5h1m5 0h1m1 0h2m1 0h1m1 0h1m2 0h3m3 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m5 0h1m3 0h1m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h1m5 0h2m1 0h1m4 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m4 0h1m2 0h1m1 0h4m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m3 0h2m1 0h1m1 0h3m1 0h2m1 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h2m2 0h1m2 0h4m1 0h1M1 9.5h1m1 0h2m1 0h3m5 0h1m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m1 0h2M5 10.5h2m1 0h2m3 0h4m1 0h8m3 0h1M1 11.5h1m1 0h2m2 0h1m4 0h1m1 0h1m2 0h1m1 0h1m2 0h1m1 0h2m1 0h2M1 12.5h2m1 0h1m1 0h1m1 0h1m3 0h1m4 0h1m1 0h1m3 0h3m3 0h1M1 13.5h1m1 0h8m4 0h2m1 0h1m1 0h1m5 0h2M1 14.5h2m3 0h1m2 0h1m3 0h1m1 0h1m1 0h2m1 0h1m2 0h2m2 0h3M1 15.5h2m1 0h4m1 0h6m1 0h8m1 0h1m1 0h3M4 16.5h2m7 0h1m1 0h1m1 0h1m2 0h1m4 0h1m2 0h1M1 17.5h3m1 0h3m1 0h2m2 0h1m1 0h3m1 0h1m1 0h2m1 0h3m1 0h1M3 18.5h1m2 0h1m1 0h1m4 0h1m1 0h1m1 0h1m3 0h2m1 0h1m1 0h3M1 19.5h1m2 0h9m1 0h4m3 0h1m2 0h2m1 0h1M3 20.5h1m1 0h2m3 0h2m2 0h2m2 0h2m1 0h1m1 0h1m3 0h1M2 21.5h1m1 0h6m1 0h1m1 0h3m1 0h11M9 22.5h2m1 0h2m2 0h4m1 0h1m3 0h5M1 23.5h7m1 0h3m3 0h2m2 0h3m1 0h1m1 0h2m1 0h1M1 24.5h1m5 0h1m1 0h1m1 0h6m4 0h1m3 0h2M1 25.5h1m1 0h3m1 0h1m2 0h1m2 0h1m4 0h1m2 0h5m1 0h1m1 0h1M1 26.5h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m3 0h2m1 0h1m3 0h2m1 0h1M1 27.5h1m1 0h3m1 0h1m1 0h2m3 0h2m3 0h2m3 0h1m2 0h1m1 0h1M1 28.5h1m5 0h1m2 0h1m1 0h1m2 0h2m3 0h2m1 0h1m1 0h2m1 0h1M1 29.5h7m1 0h1m2 0h1m2 0h2m2 0h6m1 0h1m1 0h1"/></svg><figcaption>Package<span>pub.dev/packages/genui</span></figcaption></figure>
+      <figure><svg class="qr-svg" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" shape-rendering="crispEdges"><path fill="#F5F1EA" d="M0 0h35v35H0z"/><path stroke="#0A0A0C" d="M1 1.5h7m4 0h1m4 0h6m1 0h1m2 0h7M1 2.5h1m5 0h1m3 0h3m2 0h2m1 0h1m1 0h2m2 0h1m1 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h1m1 0h1m3 0h3m3 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h1m3 0h1m2 0h1m1 0h2m3 0h3m1 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h9m1 0h1m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h1m1 0h5m5 0h2m2 0h1m1 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h4m2 0h1m1 0h1m1 0h1m1 0h3M1 9.5h1m1 0h5m2 0h6m2 0h1m4 0h3m1 0h5M1 10.5h1m1 0h4m2 0h2m3 0h1m2 0h6m1 0h1m2 0h2m1 0h2m1 0h1M1 11.5h1m2 0h1m1 0h2m2 0h2m1 0h4m9 0h2m1 0h1m1 0h2M1 12.5h2m6 0h1m1 0h2m1 0h1m2 0h1m2 0h3m3 0h2m1 0h3M1 13.5h2m2 0h6m2 0h1m1 0h1m2 0h1m2 0h1m1 0h1m1 0h2m1 0h3m1 0h2M2 14.5h1m1 0h2m3 0h2m1 0h1m1 0h1m1 0h1m1 0h7m2 0h2m1 0h4M2 15.5h2m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m1 0h3m7 0h2m2 0h3M1 16.5h1m1 0h1m2 0h1m3 0h2m2 0h2m1 0h1m2 0h3m3 0h2m1 0h1m1 0h1M2 17.5h2m1 0h1m1 0h2m2 0h1m6 0h1m1 0h2m1 0h1m1 0h2m1 0h2m3 0h1M2 18.5h1m3 0h1m1 0h3m3 0h1m3 0h1m1 0h5m2 0h2m1 0h2m1 0h1M1 19.5h2m1 0h1m2 0h2m1 0h1m2 0h5m1 0h1m1 0h1m3 0h1m2 0h2m1 0h2M2 20.5h1m1 0h1m1 0h1m1 0h1m3 0h1m1 0h2m5 0h3m2 0h8M5 21.5h3m1 0h1m2 0h5m1 0h1m6 0h2m1 0h3m1 0h1M1 22.5h2m3 0h1m2 0h3m1 0h3m1 0h1m1 0h4m1 0h1m2 0h1m2 0h1m2 0h1M1 23.5h1m1 0h2m1 0h4m1 0h3m2 0h1m2 0h1m1 0h1m3 0h1m3 0h1m2 0h1M1 24.5h1m1 0h1m2 0h1m2 0h1m4 0h1m4 0h1m1 0h3m2 0h2m1 0h5M1 25.5h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m2 0h4m6 0h5m3 0h1M9 26.5h2m2 0h2m2 0h5m3 0h1m3 0h1m1 0h1m1 0h1M1 27.5h7m4 0h3m1 0h1m1 0h1m4 0h3m1 0h1m1 0h1m1 0h2M1 28.5h1m5 0h1m1 0h1m1 0h4m4 0h1m1 0h5m3 0h5M1 29.5h1m1 0h3m1 0h1m1 0h1m1 0h2m2 0h4m4 0h1m1 0h6m1 0h2M1 30.5h1m1 0h3m1 0h1m1 0h3m3 0h1m1 0h1m2 0h2m2 0h1m1 0h1m2 0h1m1 0h3M1 31.5h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h2m4 0h1m1 0h2m2 0h2m1 0h1M1 32.5h1m5 0h1m2 0h1m1 0h2m1 0h3m2 0h3m3 0h2m1 0h3M1 33.5h7m1 0h4m3 0h3m4 0h6m3 0h1"/></svg><figcaption>Codelab<span>60 min &middot; genui-intro</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<!-- reveal.js + plugin, tutti locali -->
+<script src="vendor/reveal.js/dist/reveal.js"></script>
+<script src="vendor/reveal.js/plugin/notes/notes.js"></script>
+<script src="vendor/reveal.js/plugin/highlight/highlight.js"></script>
+<script>
+  Reveal.initialize({
+    // spazio di coordinate 16:9; su 4:3 reveal scala e mette le bande
+    width: 1280,
+    height: 720,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 1.6,
+
+    center: true,
+    hash: true,
+    history: false,          // hash:true + history:false => funziona anche da file://
+    slideNumber: 'c/t',
+    showSlideNumber: 'all',
+    progress: true,
+    controls: true,
+    controlsTutorial: false,
+    overview: true,          // tasto ESC / O
+    keyboard: true,
+    touch: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'fade',
+    fragmentInURL: false,
+    pdfSeparateFragments: false,   // export PDF: una pagina per slide
+    pdfMaxPagesPerSlide: 1,
+
+    plugins: [RevealNotes, RevealHighlight],
+  });
+
+  // scorciatoie comode dal palco
+  Reveal.addKeyBinding({ keyCode: 66, key: 'B', description: 'Schermo nero' },
+    () => document.body.classList.toggle('blackout'));
+</script>
+<style>
+  body.blackout .reveal { visibility: hidden; }
+  body.blackout { background: #000; }
+</style>
+</body>
+</html>

@@ -1,0 +1,74 @@
+name: genui_flutter_catania
+description: "Etna Assistant — demo GenUI per il talk a Flutter Catania."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # GenUI. Pinned without a caret: the package is in alpha and its API
+  # changed in May 2026 (`ContentGenerator` no longer exists).
+  genui: 0.10.3
+  json_schema_builder: ^0.1.7
+
+  # Firebase AI Logic + App Check. Mandatory for everyone from November 2,
+  # 2026, but enforcement is already on for this project: without a registered
+  # debug token, no call to Gemini goes through. See README.
+  firebase_core: ^4.15.0
+  firebase_ai: ^4.0.0
+  firebase_app_check: ^0.4.8
+
+  # The model's plain text is markdown. Same renderer used by the `Text` of
+  # genui's basic catalog, which already pulls it in as a dependency.
+  flutter_markdown_plus: ^1.0.12
+
+  # State management.
+  bloc: ^9.2.1
+  flutter_bloc: ^9.1.1
+
+  # Domain.
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.12.0
+  http: ^1.6.0
+
+  # Epicenter map.
+  flutter_map: ^8.3.2
+  latlong2: ^0.10.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # Codegen. The *.g.dart and *.freezed.dart files are NOT in the repo: after
+  # cloning, run `fvm dart run build_runner build` before anything else.
+  build_runner: ^2.15.1
+  freezed: 3.2.5
+  json_serializable: ^6.14.1
+
+  bloc_test: ^10.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Roboto bundled instead of downloaded at runtime: on web Flutter fetches it
+  # from fonts.gstatic.com, and if that fails (Widget Previewer in VS Code,
+  # venue Wi-Fi) it falls back to fonts with widely spaced digits.
+  # Only the weights the catalog actually uses. License:
+  # assets/fonts/roboto/OFL.txt.
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/roboto/Roboto-Regular.ttf
+        - asset: assets/fonts/roboto/Roboto-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/roboto/Roboto-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/roboto/Roboto-Bold.ttf
+          weight: 700
